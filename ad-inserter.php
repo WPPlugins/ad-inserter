@@ -2,7 +2,7 @@
 
 /*
 Plugin Name: Ad Inserter
-Version: 2.8.7
+Version: 2.8.8
 Description: Ad management with many advanced advertising features to insert ads at optimal positions
 Author: Igor Funa
 Author URI: http://igorfuna.com/
@@ -17,6 +17,10 @@ License: GPLv3
 /*
 
 Change Log
+
+Ad Inserter 2.8.8 - 2025-10-28
+- Security fix for potential cross site scripting
+- Few minor bug fixes, cosmetic changes and code improvements
 
 Ad Inserter 2.8.7 - 2025-09-26
 - Few minor bug fixes, cosmetic changes and code improvements
@@ -9585,6 +9589,8 @@ function ai_process_shortcode (&$block, $atts) {
       if (is_array ($post_meta)) {
         $post_meta = implode (', ', $post_meta);
       }
+
+      $post_meta = sanitize_text_field ($post_meta);
 
       return empty ($post_meta) && $default_value !== null ? $default_value : $post_meta;
     }
