@@ -6,7 +6,7 @@ Tags: ads, adsense, amp, ad rotation, ad manager
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.8.15
+Stable tag: 2.8.16
 License: GPLv3
 
 Manage Google AdSense ads, banners, ad rotation, sticky widgets, AMP ads, ads.txt, tracking, header and footer code, PHP code, global custom fields
@@ -67,6 +67,7 @@ It's all about the [settings](https://adinserter.pro/documentation).
 *   Insert Google Analytics, Matomo (Piwik) or any other tracking code
 *   Insert images, HTML, CSS, Javascript or PHP code
 *   Insert into Ajax, RSS and REST requests
+*   Insert with Gutenbeg blocks
 *   Code generator for banners and placeholders
 *   AdSense code generator
 *   Support to detect, hide or replace blank AdSense blocks
@@ -361,6 +362,12 @@ If you are not happy to reveal this information and you have opted in, simply di
 
 == Changelog ==
 
+= 2.8.16 =
+- Fix for reflected cross-site scripting (credits to darkmode)
+- Added support for Gutenberg blocks
+- Lists button renamed to Conditions
+- Few minor bug fixes, cosmetic changes and code improvements
+
 = 2.8.15 =
 - Optimized AdSense API code
 - Few minor bug fixes, cosmetic changes and code improvements
@@ -431,6 +438,12 @@ If you are not happy to reveal this information and you have opted in, simply di
 For the changelog of earlier versions, please refer to the separate changelog.txt file.
 
 == Upgrade Notice ==
+
+= 2.8.16 =
+Fix for reflected cross-site scripting (credits to darkmode);
+Added support for Gutenberg blocks;
+Lists button renamed to Conditions;
+Few minor bug fixes, cosmetic changes and code improvements
 
 = 2.8.15 =
 Optimized AdSense API code;
