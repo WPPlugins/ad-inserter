@@ -335,8 +335,8 @@ function ai_json_data (cookie) {
 }
 
 ai_check_block = function (block) {
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 1
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 1
+//  var ai_debug = false;
 
   if (block == null) {
     return true;
@@ -564,8 +564,8 @@ ai_check_block = function (block) {
 
 ai_check_and_insert_block = function (block, id) {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 2
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 2
+//  var ai_debug = false;
 
   if (block == null) {
     return true;
@@ -587,6 +587,7 @@ ai_check_and_insert_block = function (block, id) {
         if (ai_debug) console.log ('AI CHECK FAILED, INSERTING FALLBACK BLOCK', ai_block_div.getAttribute ('limits-fallback'));
 
         ai_block_div.setAttribute ('data-code', ai_block_div.getAttribute ('data-fallback-code'));
+        ai_block_div.setAttribute ('data-code-hash', ai_block_div.getAttribute ('data-fallback-code-hash'));
 
         if (wrapping_div != null && wrapping_div.hasAttribute ('data-ai')) {
           if (ai_block_div.hasAttribute ('fallback-tracking') && ai_block_div.hasAttribute ('fallback_level')) {
@@ -656,8 +657,8 @@ ai_check_and_insert_block = function (block, id) {
 
 ai_load_cookie = function () {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
+//  var ai_debug = false;
 
   var ai_cookie_name = 'aiBLOCKS';
 
@@ -678,8 +679,8 @@ ai_load_cookie = function () {
 
 function ai_get_cookie (block, property) {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 4
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 4
+//  var ai_debug = false;
 
   var value = '';
   var ai_cookie = ai_load_cookie ();
@@ -706,8 +707,8 @@ ai_set_cookie = function (block, property, value) {
   }
 
   var ai_cookie_name = 'aiBLOCKS';
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 5
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 5
+//  var ai_debug = false;
 
   if (ai_debug) console.log ('AI COOKIE SET block:', block, 'property:', property, 'value:', value);
 

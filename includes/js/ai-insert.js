@@ -4,7 +4,6 @@ ai_insert = function (insertion, selector, insertion_code) {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //    var ai_debug = false;
 
-//  if (selector.indexOf (':eq') != - 1) {
   // ***
   if (selector.indexOf (':eq(') != - 1) {
     var jq = window.jQuery && window.jQuery.fn;
@@ -82,58 +81,27 @@ ai_insert = function (insertion, selector, insertion_code) {
     }
 
     if (insertion == 'before') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element));
-//      } else
-
       element.parentNode.insertBefore (fragment, element);
     } else
     if (insertion == 'after') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element.nextSibling));
-//      } else
-
       element.parentNode.insertBefore (fragment, element.nextSibling);
     } else
     if (insertion == 'prepend') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element.firstChild));
-//      } else
-
       element.insertBefore (fragment, element.firstChild);
     } else
     if (insertion == 'append') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).appendTo (jQuery (element));
-//      } else
-
       element.insertBefore (fragment, null);
     } else
     if (insertion == 'replace-content') {
       element.innerHTML = '';
 
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).appendTo (jQuery (element));
-//      } else
-
       element.insertBefore (fragment, null);
     } else
     if (insertion == 'replace-element') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element));
-//      } else
-
       element.parentNode.insertBefore (fragment, element);
 
       element.parentNode.removeChild (element);
     }
-//  });
     ai_process_elements ();
   };
 }
@@ -185,45 +153,49 @@ ai_insert_code = function (element) {
     var insertion_type = element.getAttribute ('data-insertion-position');
     var selector       = element.getAttribute ('data-selector');
 
+    var insert_code = true;
+    if (typeof ai_code_hashes !== 'undefined') {
+      if (element.hasAttribute ('data-code-hash')) {
+        insert_code = ai_code_hashes.includes (element.dataset.codeHash);
+      } else insert_code = false;
+    }
+
     if (insertion_code != null) {
-      if (insertion_type != null && selector != null) {
-        // ***
-        if (selector.indexOf (':eq(') != - 1) {
-          var jq = window.jQuery && window.jQuery.fn;
-          if (jq) {
-            var selector_exists = jQuery (selector).length;
-          } else var selector_exists = false;
-        } else var selector_exists = document.querySelectorAll (selector).length;
-
-        if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block, insertion_type, selector, selector_exists ? '' : 'NOT FOUND');
-
-        if (selector_exists) {
-          ai_insert (insertion_type, selector, b64d (insertion_code));
-          removeClass (element, 'ai-viewports');
-        }
-      } else {
-          if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block);
-
-          var range = document.createRange ();
-
-          var fragment_ok = true;
-          try {
-            var fragment = range.createContextualFragment (b64d (insertion_code));
-          }
-          catch (err) {
-            var fragment_ok = false;
-            if (ai_debug) console.log ('AI INSERT NEXT', 'range.createContextualFragment ERROR:', err.message);
-          }
-
+      if (insert_code) {
+        if (insertion_type != null && selector != null) {
           // ***
-//          if (!fragment_ok) {
-//            jQuery (b64d (insertion_code)).insertBefore (jQuery (element.nextSibling));
-//          } else
+          if (selector.indexOf (':eq(') != - 1) {
+            var jq = window.jQuery && window.jQuery.fn;
+            if (jq) {
+              var selector_exists = jQuery (selector).length;
+            } else var selector_exists = false;
+          } else var selector_exists = document.querySelectorAll (selector).length;
 
-          element.parentNode.insertBefore (fragment, element.nextSibling);
+          if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block, insertion_type, selector, selector_exists ? '' : 'NOT FOUND');
 
-          removeClass (element, 'ai-viewports');
-        }
+          if (selector_exists) {
+            ai_insert (insertion_type, selector, b64d (insertion_code));
+            removeClass (element, 'ai-viewports');
+          }
+        } else {
+            if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block);
+
+            var range = document.createRange ();
+
+            var fragment_ok = true;
+            try {
+              var fragment = range.createContextualFragment (b64d (insertion_code));
+            }
+            catch (err) {
+              var fragment_ok = false;
+              if (ai_debug) console.log ('AI INSERT NEXT', 'range.createContextualFragment ERROR:', err.message);
+            }
+
+            element.parentNode.insertBefore (fragment, element.nextSibling);
+
+            removeClass (element, 'ai-viewports');
+          }
+      } else if (ai_debug) console.log ('AI INSERT ELEMENT HASH CHECK FAILED');
     }
 
     insertion = true;
@@ -337,55 +309,6 @@ ai_insert_adsense_fallback_codes = function (adsense_unfilled_ins) {
   }
 }
 
-//ai_insert_fallback_codes = function () {
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
-////  var ai_debug = false;
-
-//  var ai_fallback_divs = document.getElementsByClassName ('ai-fallback-adsense');
-
-//  var fallback_check = ai_fallback_divs.length;
-//  if (ai_debug && fallback_check) {
-//    console.log ('');
-//    console.log ('AI FALLBACK CHECK ADSENSE:', ai_fallback_divs.length, 'block' + (ai_fallback_divs.length == 1 ? '' : 's')) ;
-//  }
-
-//  for (var adsense = 0; adsense < ai_fallback_divs.length; adsense ++) {
-//    var adsense_div = ai_fallback_divs [adsense];
-//    var adsense_unfilled_ins = adsense_div.querySelector ('ins.adsbygoogle[data-ad-status="filled"]');
-
-//    if (!!adsense_unfilled_ins) {
-//      adsense_unfilled_ins.style.display = "none";
-
-//      var fallback_div = adsense_div.nextElementSibling;
-//      var insert = !!fallback_div.getAttribute ('data-code');
-
-//      if (insert) {
-//        if (ai_debug) {
-//          var block = fallback_div.getAttribute ('data-block');
-//          console.log ('AI INSERT FALLBACK CODE FOR BLOCK', block);
-//        }
-
-//        var inserted = ai_insert_code (fallback_div);
-
-//        if (inserted) {
-//          ai_process_elements ();
-//        }
-//      } else {
-//          if (ai_debug) {
-//            var block = fallback_div.getAttribute ('data-block');
-//            console.log ('AI SHOW FALLBACK CODE FOR BLOCK', block);
-//          }
-
-//          fallback_div.style.display = "block";
-//        }
-//    }
-//  }
-
-//  if (ai_debug && fallback_check) {
-//    console.log ('');
-//  }
-//}
-
 ai_insert_code_by_class = function (id) {
   var ai_block_div = document.getElementsByClassName (id) [0];
 
@@ -410,8 +333,7 @@ ai_insert_client_code = function (id, len) {
   if (typeof ai_block_div != 'undefined') {
     var insertion_code = ai_block_div.getAttribute ('data-code');
 
-//    if (insertion_code != null && ai_check_block () && ai_check_and_insert_block ()) {
-    if (insertion_code != null && ai_check_block () /*&& ai_check_and_insert_block ()*/) {
+    if (insertion_code != null && ai_check_block ()) {
       ai_block_div.setAttribute ('data-code', insertion_code.substring (Math.floor (len / 19)));
       ai_insert_code_by_class (id);
       ai_block_div.remove();
@@ -431,20 +353,14 @@ function ai_process_elements () {
       }
 
       if (typeof ai_process_lists == 'function') {
-        // ***
-//        ai_process_lists (jQuery (".ai-list-data"));
         ai_process_lists ();
       }
 
       if (typeof ai_process_ip_addresses == 'function') {
-        // ***
-//        ai_process_ip_addresses (jQuery (".ai-ip-data"));
         ai_process_ip_addresses ();
       }
 
       if (typeof ai_process_filter_hooks == 'function') {
-        // ***
-//        ai_process_filter_hooks (jQuery (".ai-filter-check"));
         ai_process_filter_hooks ();
       }
 

@@ -199,6 +199,7 @@ function ai_adb_process_blocks (element) {
 
           // Don't use data () as the value will be cached - wrong value for tracking
           element.querySelectorAll (".ai-adb-hide").forEach ((el, i) => {
+
             el.style.display = 'none';
             el.style.visibility = 'hidden';
 
@@ -220,6 +221,8 @@ function ai_adb_process_blocks (element) {
             ai_disable_processing (el);
 
             if (ai_adb_debugging) {
+//              console.log ('AI AD BLOCKING HIDE disable processing', el.tagName + el.getAttribute ('class') != null ? ('.' + el.getAttribute ('class')) : '');
+
               console.log ("AI AD BLOCKING HIDE", 'aiDebug' in el.dataset ? el.dataset.aiDebug : "");
             }
           });
@@ -233,20 +236,48 @@ function ai_adb_process_blocks (element) {
 //            el.classList.remove ('ai-adb-show'); // Should not be removed as some delayed action might be triggered after ad blocking is detected
 
             if ('code' in el.dataset) {
-              var adb_code = b64d (el.dataset.code);
 
-              if (ai_adb_debugging) console.log ('AI AD BLOCKING SHOW INSERT CODE');
-              if (ai_adb_debugging) console.log ('');
-
-              el.innerHTML += adb_code;
-
-              code_insertion = true;
-              code_inserted = true;
-
-              // Process rotations to set versions before tracking data is set
-              if (typeof ai_process_elements == 'function') {
-                ai_process_elements ();
+              var insert_code = true;
+              if (typeof ai_code_hashes !== 'undefined') {
+                if (el.hasAttribute ('data-code-hash')) {
+                  insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+                } else insert_code = false;
               }
+
+              if (insert_code) {
+                if (ai_adb_debugging) console.log ('AI AD BLOCKING SHOW INSERT CODE');
+                if (ai_adb_debugging) console.log ('');
+
+                var adb_code = b64d (el.dataset.code);
+
+                var template = document.createElement ('div');
+                template.innerHTML = adb_code;
+
+                var range = document.createRange ();
+
+                var fragment_ok = true;
+                try {
+                  var fragment = range.createContextualFragment (template.innerHTML);
+                }
+                catch (err) {
+                  var fragment_ok = false;
+                  if (ai_debug) console.log ('AI AD BLOCKING SHOW', 'range.createContextualFragment ERROR:', err.message);
+                }
+
+                if (fragment_ok) {
+                  el.append (fragment);
+                }
+
+                el.removeAttribute ("data-code");
+
+                code_insertion = true;
+                code_inserted = true;
+
+                // Process rotations to set versions before tracking data is set
+                if (typeof ai_process_elements == 'function') {
+                  ai_process_elements ();
+                }
+              } else if (ai_debug) console.log ('AI AD BLOCKING SHOW INSERT CODE HASH CHECK FAILED');
             }
 
             if (el.hasAttribute ('data-ai-tracking')) {
@@ -266,6 +297,7 @@ function ai_adb_process_blocks (element) {
                 wrapping_div.setAttribute ("data-ai", tracking_data);
               }
             }
+
             if (ai_adb_debugging) {
               console.log ("AI AD BLOCKING SHOW", 'aiDebug' in el.dataset ? el.dataset.aiDebug : "");
             }
@@ -420,12 +452,19 @@ var ai_adb_detected = function (n) {
 }
 
 var ai_disable_processing = function (element) {
-  document.querySelectorAll ('.ai-lazy').forEach ((el, index) => {el.classList.remove ('ai-lazy');});                                            // Disable lazy loading
-  document.querySelectorAll ('.ai-manual').forEach ((el, index) => {el.classList.remove ('ai-manual');});                                        // Disable manual loading
-  document.querySelectorAll ('.ai-rotate').forEach ((el, index) => {el.classList.remove ('ai-unprocessed'); el.removeAttribute ('data-info');}); // Disable rotations
-  document.querySelectorAll ('.ai-list-data').forEach ((el, index) => {el.classList.remove ('ai-list-data');});                                  // Disable lists
-  document.querySelectorAll ('.ai-ip-data').forEach ((el, index) => {el.classList.remove ('ai-ip-data');});                                      // Disable IP lists
-  document.querySelectorAll ('[data-code]').forEach ((el, index) => {el.removeAttribute ('data-code');});                                        // Disable insertions
+//  document.querySelectorAll ('.ai-lazy').forEach ((el, index) => {el.classList.remove ('ai-lazy');});                                            // Disable lazy loading
+//  document.querySelectorAll ('.ai-manual').forEach ((el, index) => {el.classList.remove ('ai-manual');});                                        // Disable manual loading
+//  document.querySelectorAll ('.ai-rotate').forEach ((el, index) => {el.classList.remove ('ai-unprocessed'); el.removeAttribute ('data-info');}); // Disable rotations
+//  document.querySelectorAll ('.ai-list-data').forEach ((el, index) => {el.classList.remove ('ai-list-data');});                                  // Disable lists
+//  document.querySelectorAll ('.ai-ip-data').forEach ((el, index) => {el.classList.remove ('ai-ip-data');});                                      // Disable IP lists
+//  document.querySelectorAll ('[data-code]').forEach ((el, index) => {el.removeAttribute ('data-code');});                                        // Disable insertions
+
+  element.classList.remove ('ai-lazy');         element.querySelectorAll ('.ai-lazy').forEach ((el, index) => {el.classList.remove ('ai-lazy');});                                            // Disable lazy loading
+  element.classList.remove ('ai-manual');       element.querySelectorAll ('.ai-manual').forEach ((el, index) => {el.classList.remove ('ai-manual');});                                        // Disable manual loading
+  element.classList.remove ('ai-unprocessed');  element.removeAttribute ('data-info'); element.querySelectorAll ('.ai-rotate').forEach ((el, index) => {el.classList.remove ('ai-unprocessed'); el.removeAttribute ('data-info');}); // Disable rotations
+  element.classList.remove ('ai-list-data');    element.querySelectorAll ('.ai-list-data').forEach ((el, index) => {el.classList.remove ('ai-list-data');});                                  // Disable lists
+  element.classList.remove ('ai-ip-data');      element.querySelectorAll ('.ai-ip-data').forEach ((el, index) => {el.classList.remove ('ai-ip-data');});                                      // Disable IP lists
+  element.removeAttribute ('data-code');        element.querySelectorAll ('[data-code]').forEach ((el, index) => {el.removeAttribute ('data-code');});                                        // Disable insertions
 }
 
 var ai_adb_detected_actions = function (n) {

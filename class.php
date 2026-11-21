@@ -2823,7 +2823,11 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                   $code_id = 'ai-viewport-code-' . rand (1000, 9999) . rand (1000, 9999);
 
                   $ai_dbg_code = base64_encode ($invisible_label);
-                  $processed_code .= "<div class='{$code_id}-dbg' data-insertion-position='after' data-selector='.{$code_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code'></div>\n";
+
+                  $code_hash = md5 ($ai_dbg_code . rand (1, 1000000000));
+                  $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                  $processed_code .= "<div class='{$code_id}-dbg' data-insertion-position='after' data-selector='.{$code_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code' data-code-hash='$code_hash'></div>\n";
                   $js_code = "ai_insert_code_by_class ('{$code_id}-dbg');";
                   $processed_code .= $this->ai_js_dom_ready ($js_code);
                 }
@@ -2884,14 +2888,16 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
 
               $ai_code = $this->base64_encode_w3tc (ai_strip_js_markers ($viewport_code), false);
 
+              $code_hash = md5 ($ai_code . rand (1, 1000000000));
+              $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
               $style_attribute = '';
               if (isset ($viewport_parameters [$viewport_code_index]['css'])) {
                 // Style is removed in ai-insert.js !!!
                 $style_attribute = " style='" . $viewport_parameters [$viewport_code_index]['css'] . "'";
-//                $style_attribute = " data-css='" . $viewport_parameters [$viewport_code_index]['css'] . "'";
               }
 
-              $processed_code .= "<div class='{$viewport_classes} {$code_id}'{$style_attribute} data-insertion-position='after' data-selector='.{$code_id}' data-insertion-no-dbg data-code='$ai_code'></div>\n";
+              $processed_code .= "<div class='{$viewport_classes} {$code_id}'{$style_attribute} data-insertion-position='after' data-selector='.{$code_id}' data-insertion-no-dbg data-code='$ai_code' data-code-hash='$code_hash'></div>\n";
               if (!get_disable_js_code ()) {
                 $js_code = "ai_insert_viewport_code ('$code_id');";
 
@@ -2902,7 +2908,11 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                     $invisible_viewport_classes = 'ai-viewports ' . $invisible_viewport_classes . ' ';
                   }
                   $ai_dbg_code = base64_encode ($invisible_label);
-                  $processed_code .= "<div class='$invisible_viewport_classes {$code_id}-dbg' data-insertion-position='after' data-selector='.{$code_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code'></div>\n";
+
+                  $code_hash = md5 ($ai_dbg_code . rand (1, 1000000000));
+                  $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                  $processed_code .= "<div class='$invisible_viewport_classes {$code_id}-dbg' data-insertion-position='after' data-selector='.{$code_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code' data-code-hash='$code_hash'></div>\n";
                   $js_code = "ai_insert_code_by_class ('{$code_id}-dbg');";
                   $processed_code .= $this->ai_js_dom_ready ($js_code);
                 }
@@ -2967,7 +2977,10 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
               if ($insert_code) {
                 $ai_code = $this->base64_encode_w3tc (ai_strip_js_markers ($debug_fallback_code . trim ($codes [1])), false);
 
-                $processed_code .= "<div data-code='$ai_code'></div>\n";
+                $code_hash = md5 ($ai_code . rand (1, 1000000000));
+                $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                $processed_code .= "<div data-code='$ai_code' data-code-hash='$code_hash'></div>\n";
               } else {
                   $processed_code .= "<div style='display: none;'>\n" . $debug_fallback_code . trim ($codes [1]) . "\n</div>\n";
                 }
@@ -3919,7 +3932,13 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                   }
                   break;
                 case AI_DYNAMIC_BLOCKS_CLIENT_SIDE_INSERT:
-                  $version_code_data = ' data-code="'.base64_encode (ai_strip_js_markers ($ad)).'"';
+                  $ai_code = base64_encode (ai_strip_js_markers ($ad));
+
+                  $code_hash = md5 ($ai_code . rand (1, 1000000000));
+                  $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                  $version_code_data = ' data-code="'.$ai_code.'" data-code-hash="'.$code_hash.'"';
+
                   $processed_code .= '<div class="ai-rotate-option"'.$tracking_index_data.$version_name_data.$version_time_data.$version_scheduling_data.$version_group_data.$version_code_data.">\n</div>\n";
                   break;
               }
@@ -4162,8 +4181,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
         }
 
         $lazy_code = $this->base64_encode_w3tc ($processed_code);
+
+        $code_hash = md5 ($lazy_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
         $wrapper_class = base64_encode (get_block_class_name (true));
-        $processed_code = '<div class="ai-lazy" data-code="'.$lazy_code.'" data-class="'.$wrapper_class.'"></div>'."\n";
+        $processed_code = '<div class="ai-lazy" data-code="'.$lazy_code.'" data-code-hash="'.$code_hash.'" data-class="'.$wrapper_class.'"></div>'."\n";
 
         // Recreate W3TC code
         if ($this->w3tc_code != '') {
@@ -4181,8 +4204,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
         }
 
         $manual_code = $this->base64_encode_w3tc ($processed_code);
+
+        $code_hash = md5 ($manual_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
         $wrapper_class = base64_encode (get_block_class_name (true));
-        $processed_code = '<div class="ai-manual ai-manual-' . $this->number . '" data-code="'.$manual_code.'" data-class="'.$wrapper_class.'"></div>'."\n";
+        $processed_code = '<div class="ai-manual ai-manual-' . $this->number . '" data-code="'.$manual_code.'" data-code-hash="'.$code_hash.'" data-class="'.$wrapper_class.'"></div>'."\n";
 
         // Recreate W3TC code
         if ($this->w3tc_code != '') {
@@ -4344,7 +4371,13 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                       $fallback_block_data = $fallback_block;
                       $fallback_obj = $block_object [$fallback_block];
                       $fallback_code = $fallback_obj->ai_getProcessedCode ();
-                      $fallback_code_data = " data-fallback-code='" . base64_encode ($fallback_code) . "'";
+
+                      $ai_code = base64_encode ($fallback_code);
+
+                      $code_hash = md5 ($ai_code . rand (1, 1000000000));
+                      $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                      $fallback_code_data = " data-fallback-code='" . $ai_code . "' data-fallback-code-hash='" . $code_hash . "'";
 
                       $fallback_tracking_block = $fallback_obj->get_tracking () ? $fallback_obj->number : 0;
 //                      $fallback_tracking_data = base64_encode ("[{$fallback_tracking_block},{$fallback_obj->code_version},\"{$fallback_obj->get_ad_name ()}\",\"{$fallback_obj->version_name}\"]");
@@ -4386,14 +4419,22 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                       $list_class = ' ai-list-manual';
                     } else $list_class = '';
 
-                    $processed_code = "\n<div class='ai-dynamic{$list_class} ai-list-data'{$referer_attributes}{$client_attributes}{$url_parameter_attributes}{$cookie_attributes}{$scheduling_attributes}{$debug_id_data}>{$processed_code}</div>\n";
+                    $code_hash = md5 ('ai-list-data' . rand (1, 1000000000));
+                    $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                    $processed_code = "\n<div class='ai-dynamic{$list_class} ai-list-data'{$referer_attributes}{$client_attributes}{$url_parameter_attributes}{$cookie_attributes}{$scheduling_attributes}{$debug_id_data} data-code-hash='{$code_hash}'>{$processed_code}</div>\n";
 
                     if ($scheduling_type !== null) {
                       $processed_code .= "<div class='ai-fallback'>{$fallback_code}</div>\n";
                     }
                     break;
                   case AI_DYNAMIC_BLOCKS_CLIENT_SIDE_INSERT:
-                    $code_data = " data-code='".base64_encode ($processed_code)."'";
+                    $code_string = base64_encode ($processed_code);
+
+                    $code_hash = md5 ($code_string . rand (1, 1000000000));
+                    $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                    $code_data = " data-code='".$code_string."' data-code-hash='".$code_hash."'";
 
                     if (($ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_AJAX || $ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_REST) && !$ai_wp_data [AI_CODE_FOR_IFRAME]) {
                       $block_id = 'ai-list-' . $this->number . '-' . rand (1000, 9999) . rand (1000, 9999);
@@ -4608,7 +4649,13 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                     $processed_code = "\n<div class='ai-dynamic ai-ip-data' $ip_address_attributes $country_attributes>$processed_code</div>\n";
                     break;
                   case AI_DYNAMIC_BLOCKS_CLIENT_SIDE_INSERT:
-                    $code_data = "data-code='".base64_encode ($processed_code)."'";
+                    $code_string = base64_encode ($processed_code);
+
+                    $code_hash = md5 ($code_string . rand (1, 1000000000));
+                    $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+//                    $code_data = "data-code='".base64_encode ($processed_code)."'";
+                    $code_data = " data-code='".$code_string."' data-code-hash='".$code_hash."'";
 
                     if (($ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_AJAX || $ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_REST) && !$ai_wp_data [AI_CODE_FOR_IFRAME]) {
                       $block_id = 'ai-ip-' . $this->number . '-' . rand (1000, 9999) . rand (1000, 9999);
@@ -4773,7 +4820,10 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
 
               $ai_code = $this->base64_encode_w3tc (ai_strip_w3tc_markers ($processed_code), false); // Use W3TC code in case W3TC was used before and insert was specified for CHECK
 
-              $processed_code = "<div class='{$viewport_classes} {$class_id}' data-insertion-position='after' data-selector='.{$class_id}' data-insertion-no-dbg data-code='$ai_code'></div>\n";
+              $code_hash = md5 ($ai_code . rand (1, 1000000000));
+              $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+              $processed_code = "<div class='{$viewport_classes} {$class_id}' data-insertion-position='after' data-selector='.{$class_id}' data-insertion-no-dbg data-code='$ai_code' data-code-hash='$code_hash'></div>\n";
 
               if (!get_disable_js_code ()) {
                 $js_code = "ai_insert_list_code ('{$class_id}');";
@@ -4785,7 +4835,11 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                     $invisible_viewport_classes = 'ai-viewports ' . $invisible_viewport_classes . ' ';
                   }
                   $ai_dbg_code = base64_encode ($invisible_label);
-                  $processed_code .= "<div class='{$invisible_viewport_classes} {$class_id}-dbg' data-insertion-position='after' data-selector='.{$class_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code'></div>\n";
+
+                  $code_hash = md5 ($ai_dbg_code . rand (1, 1000000000));
+                  $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                  $processed_code .= "<div class='{$invisible_viewport_classes} {$class_id}-dbg' data-insertion-position='after' data-selector='.{$class_id}-dbg' data-insertion-no-dbg data-code='$ai_dbg_code' data-code-hash='$code_hash'></div>\n";
                   $js_code = "ai_insert_code_by_class ('{$class_id}-dbg');";
                   $processed_code .= $this->ai_js_dom_ready ($js_code);
                 }
@@ -4886,7 +4940,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                   $debug_fallback_code = $debug_fallback->bar ('', '', _x ('FALLBACK', 'alternative block', 'ad-inserter') . " = {$fallback_block}", '');
                 } else $debug_fallback_code = '';
 
-                $fallback_data = " data-fallback-code='" . base64_encode ($debug_fallback_code . $fallback_code) . "' limits-fallback='$fallback_block' fallback_level='$fallback_level' fallback-tracking='$fallback_tracking_data'";
+                $ai_code = base64_encode ($debug_fallback_code . $fallback_code);
+
+                $code_hash = md5 ($ai_code . rand (1, 1000000000));
+                $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                $fallback_data = " data-fallback-code='" . $ai_code . "' data-fallback-code-hash='" . $code_hash . "' limits-fallback='$fallback_block' fallback_level='$fallback_level' fallback-tracking='$fallback_tracking_data'";
 
                 $ad_inserter_globals [$globals_name] --;
               }
@@ -4901,10 +4960,14 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                 $debug_label->block_end ();
             }
 
+            $ai_code = base64_encode (ai_strip_w3tc_markers (ai_strip_js_markers ($processed_code)));
+
+            $code_hash = md5 ($ai_code . rand (1, 1000000000));
+            $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
             $processed_code =
               $debug_html_code .
-              "<div class='no-visibility-check ai-check-{$block_id}' data-insertion-position='after' data-selector='.ai-check-{$block_id}' data-code='" .
-              base64_encode (ai_strip_w3tc_markers (ai_strip_js_markers ($processed_code))) .
+              "<div class='no-visibility-check ai-check-{$block_id}' data-insertion-position='after' data-selector='.ai-check-{$block_id}' data-code='" . $ai_code . " data-code-hash='" . $code_hash .
               "'{$fallback_data} data-block='{$this->number}'>{$ai_check_block_html_code}</div>\n";
 
             if (!get_disable_js_code ()) {
@@ -4937,7 +5000,10 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                   $this->wrapping_div_classes []= 'ai-list-block-filter';
                 }
 
-                $processed_code = $debug_html_code . "\n<div class='ai-dynamic ai-filter-check' data-block='{$this->number}'>$processed_code</div>\n";
+                $code_hash = md5 ('ai-filter-check' . rand (1, 1000000000));
+                $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                $processed_code = $debug_html_code . "\n<div class='ai-dynamic ai-filter-check' data-block='{$this->number}' data-code-hash='{$code_hash}'>$processed_code</div>\n";
                 break;
               case AI_DYNAMIC_BLOCKS_CLIENT_SIDE_INSERT:
                 // Hide block only when no block height is defined - for check options don't hide the first one
@@ -4945,7 +5011,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
                   $this->wrapping_div_classes []= 'ai-list-block-filter';
                 }
 
-                $code_data = "data-code='".base64_encode ($processed_code)."'";
+                $ai_code = base64_encode ($processed_code);
+
+                $code_hash = md5 ($ai_code . rand (1, 1000000000));
+                $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+                $code_data = "data-code='".$ai_code."' data-code-hash='".$code_hash."'";
 
                 if (($ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_AJAX || $ai_wp_data [AI_WP_PAGE_TYPE] == AI_PT_REST) && !$ai_wp_data [AI_CODE_FOR_IFRAME]) {
                   $block_id = 'ai-filter-' . $this->number . '-' . rand (1000, 9999) . rand (1000, 9999);
@@ -4991,8 +5062,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
         }
 
         $manual_code = $this->base64_encode_w3tc ($processed_code);
+
+        $code_hash = md5 ($manual_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
         $wrapper_class = base64_encode (get_block_class_name (true));
-        $processed_code = '<div class="ai-delayed ai-delayed-unprocessed ai-delayed-' . $this->number . '" data-delay="'.((int) $this->get_delay_time ()).'" data-block="'. $this->number .'" data-code="'.$manual_code.'" data-class="'.$wrapper_class.'"></div>'."\n";
+        $processed_code = '<div class="ai-delayed ai-delayed-unprocessed ai-delayed-' . $this->number . '" data-delay="'.((int) $this->get_delay_time ()).'" data-block="'. $this->number .'" data-code="'.$manual_code.'" data-code-hash="'.$code_hash.'" data-class="'.$wrapper_class.'"></div>'."\n";
 
         // Recreate W3TC code
         if ($this->w3tc_code != '') {
@@ -5010,8 +5085,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
         }
 
         $manual_code = $this->base64_encode_w3tc ($processed_code);
+
+        $code_hash = md5 ($manual_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
         $wrapper_class = base64_encode (get_block_class_name (true));
-        $processed_code = '<div class="ai-wait-for-interaction ai-wait-for-interaction-' . $this->number . '" data-code="'.$manual_code.'" data-class="'.$wrapper_class.'"></div>'."\n";
+        $processed_code = '<div class="ai-wait-for-interaction ai-wait-for-interaction-' . $this->number . '" data-code="'.$manual_code.'" data-code-hash="'.$code_hash.'" data-class="'.$wrapper_class.'"></div>'."\n";
 
         // Recreate W3TC code
         if ($this->w3tc_code != '') {
@@ -5031,8 +5110,12 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
           }
 
           $manual_code = $this->base64_encode_w3tc ($processed_code);
+
+          $code_hash = md5 ($manual_code . rand (1, 1000000000));
+          $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
           $wrapper_class = base64_encode (get_block_class_name (true));
-          $processed_code = '<div class="ai-check-recaptcha-score ai-check-recaptcha-score-' . $this->number . '" data-code="'.$manual_code.'" data-class="'.$wrapper_class.'"></div>'."\n";
+          $processed_code = '<div class="ai-check-recaptcha-score ai-check-recaptcha-score-' . $this->number . '" data-code="'.$manual_code.'" data-code-hash="'.$code_hash.'" data-class="'.$wrapper_class.'"></div>'."\n";
 
           if (($ai_wp_data [AI_WP_DEBUGGING] & AI_DEBUG_BLOCKS) != 0 && !$this->hide_debug_labels) {
             $debug_label = new ai_block_labels ('ai-debug-script');
@@ -5594,13 +5677,17 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
 
     if ($viewports_insertion && !$html_element_insertion) {
       $block_code = $this->base64_encode_w3tc (ai_strip_js_markers ($this->get_code_for_insertion ($include_viewport_classes, $hidden_widgets, $code_only)));
+
+      $block_code_hash = md5 ($block_code . rand (1, 1000000000));
+      $ai_wp_data [AI_CODE_HASHES][] = $block_code_hash;
+
       $selector = $this->get_viewport_names ();
 //      $viewport_classes = trim ($this->get_viewport_classes ());
 
       $style_attribute = "style='" . $this->get_alignment_style () . "'";
 
       // Insert inside to prevent CLS
-      $serverside_insertion_code = "<div class='ai-viewports $viewport_classes $block_id' {$style_attribute} data-insertion-position='prepend' data-selector='.{$block_id}' data-insertion-no-dbg data-code='[#AI_CODE#]' data-block='{$this->number}'></div>\n";
+      $serverside_insertion_code = "<div class='ai-viewports $viewport_classes $block_id' {$style_attribute} data-insertion-position='prepend' data-selector='.{$block_id}' data-insertion-no-dbg data-code='[#AI_CODE#]' data-code-hash='[#AI_CODE_HASH#]' data-block='{$this->number}'></div>\n";
       if (!get_disable_js_code ()) {
         $js_code = "ai_insert_viewport_code ('$block_id');";
 
@@ -5610,10 +5697,14 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
     elseif ($viewports_insertion && $html_element_insertion) {
       $this->counters = '<span class="ai-selector-counter"></span>';
       $block_code = $this->base64_encode_w3tc (ai_strip_js_markers ($this->get_code_for_insertion ($include_viewport_classes, $hidden_widgets, $code_only)));
+
+      $block_code_hash = md5 ($block_code . rand (1, 1000000000));
+      $ai_wp_data [AI_CODE_HASHES][] = $block_code_hash;
+
       $selector = trim ($this->get_html_selector (true));
 //      $viewport_classes = trim ($this->get_viewport_classes ());
 
-      $serverside_insertion_code = "<div class='ai-viewports $viewport_classes $block_id' data-insertion-position='$insertion' data-selector='$selector' data-code='[#AI_CODE#]' data-block='{$this->number}'></div>\n";
+      $serverside_insertion_code = "<div class='ai-viewports $viewport_classes $block_id' data-insertion-position='$insertion' data-selector='$selector' data-code='[#AI_CODE#]' data-code-hash='[#AI_CODE_HASH#]' data-block='{$this->number}'></div>\n";
       if (!empty ($selector) && !get_disable_js_code ()) {
         // Try to insert it immediately. If the code is server-side inserted before the HTML element, it will be client-side inserted after DOM ready (remaining .ai-viewports)
         $js_code = "ai_insert_viewport_code ('$block_id');";
@@ -5624,6 +5715,10 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
     else { // only HTML element insertion
       $this->counters = '<span class="ai-selector-counter"></span>';
       $block_code = $this->base64_encode_w3tc (ai_strip_js_markers ($this->get_code_for_insertion ($include_viewport_classes, $hidden_widgets, $code_only)));
+
+      $block_code_hash = md5 ($block_code . rand (1, 1000000000));
+      $ai_wp_data [AI_CODE_HASHES][] = $block_code_hash;
+
       $selector = trim ($this->get_html_selector (true));
 
       $serverside_insertion_code = '';
@@ -5659,7 +5754,7 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
     if ($this->w3tc_code != '' && $dynamic_blocks_w3tc) {
 
       // Check to replace " with  \'
-      $this->w3tc_code .= ' $ai_code = str_replace ("[#AI_CODE#]", base64_encode ($ai_code), base64_decode ("'. base64_encode (ai_strip_js_markers ($serverside_insertion_code)) . '"));';
+      $this->w3tc_code .= ' $ai_code = str_replace (array ("[#AI_CODE#]", "[#AI_CODE_HASH#]"), array (base64_encode ($ai_code), ""), base64_decode ("'. base64_encode (ai_strip_js_markers ($serverside_insertion_code)) . '"));';
 
       $serverside_insertion_code = '<!-- mfunc '.W3TC_DYNAMIC_SECURITY.' ';
 //      $serverside_insertion_code .= $this->w3tc_code.' if ($ai_enabled) echo $ai_code;';
@@ -5667,7 +5762,7 @@ abstract class ai_CodeBlock extends ai_BaseCodeBlock {
       $serverside_insertion_code .= ' --><!-- / mfunc '.W3TC_DYNAMIC_SECURITY.' -->';
 
     } else {
-        $serverside_insertion_code = str_replace ('[#AI_CODE#]', $block_code, $serverside_insertion_code);
+        $serverside_insertion_code = str_replace (array ('[#AI_CODE#]', '[#AI_CODE_HASH#]'), array ($block_code, $block_code_hash), $serverside_insertion_code);
       }
 
     $debug_processing = ($ai_wp_data [AI_WP_DEBUGGING] & AI_DEBUG_PROCESSING) != 0;
@@ -8796,6 +8891,14 @@ echo '</body>
 
     if ($categories == AD_EMPTY_DATA) return true;
 
+
+    $default_lang = apply_filters ('wpml_default_language', null);
+    if (!empty ($default_lang)) {
+      // WPML
+      do_action ('wpml_switch_language', $default_lang);
+    }
+
+
     switch ($ai_wp_data [AI_WP_PAGE_TYPE]) {
       case AI_PT_STATIC:
       case AI_PT_POST:
@@ -8810,6 +8913,13 @@ echo '</body>
         } else $wp_categories = array ();
         break;
     }
+
+
+    if (!empty ($default_lang)) {
+      // WPML
+      do_action ('wpml_switch_language', null); // restore the current language
+    }
+
 
     if ($cat_type == AI_BLACK_LIST) {
 
@@ -8912,7 +9022,7 @@ echo '</body>
     if ($tags == AD_EMPTY_DATA) return true;
 
     if ($tags == '*') {
-      $has_any_tag = has_tag ('', ai_get_post_id ());
+      $has_any_tag = ai_has_tag ('', ai_get_post_id ());
 
       if ($tag_type == AI_BLACK_LIST) {
         return !$has_any_tag;
@@ -8925,7 +9035,7 @@ echo '</body>
     foreach ($tags_listed as $index => $tag_listed) {
       $tags_listed [$index] = trim ($tag_listed);
     }
-    $has_any_of_the_given_tags = has_tag ($tags_listed, ai_get_post_id ());
+    $has_any_of_the_given_tags = ai_has_tag ($tags_listed, ai_get_post_id ());
 
     if ($tag_type == AI_BLACK_LIST) {
 
@@ -8964,6 +9074,8 @@ echo '</body>
     }
 
     if ($taxonomies == AD_EMPTY_DATA) return true;
+
+    $default_lang = apply_filters ('wpml_default_language', null);
 
     if ($taxonomy_type == AI_BLACK_LIST) {
 
@@ -9035,11 +9147,34 @@ echo '</body>
           }
         }
 
+
+
         $taxonomy_names = get_post_taxonomies ();
         foreach ($taxonomy_names as $taxonomy_name) {
           $terms = get_the_terms (0, $taxonomy_name);
+
+
           if (is_array ($terms)) {
             foreach ($terms as $term) {
+
+
+              if (!empty ($default_lang)) {
+                // WPML
+                do_action ('wpml_switch_language', $default_lang);
+
+                $original_term_id = apply_filters (
+                  'wpml_object_id',
+                  $term->term_id,
+                  $taxonomy_name,
+                  true
+                );
+
+                $term = get_term ($original_term_id, $taxonomy_name);
+
+                do_action ('wpml_switch_language', null); // restore the current language
+              }
+
+
               $post_term_name = strtolower ($term->name);
               $post_term_slug = strtolower ($term->slug);
               $post_taxonomy  = strtolower ($term->taxonomy);
@@ -9153,10 +9288,31 @@ echo '</body>
           }
 
           $taxonomy_names = get_post_taxonomies ();
+
           foreach ($taxonomy_names as $taxonomy_name) {
             $terms = get_the_terms (0, $taxonomy_name);
+
             if (is_array ($terms)) {
               foreach ($terms as $term) {
+
+
+                if (!empty ($default_lang)) {
+                  // WPML
+                  do_action ('wpml_switch_language', $default_lang);
+
+                  $original_term_id = apply_filters (
+                    'wpml_object_id',
+                    $term->term_id,
+                    $taxonomy_name,
+                    true
+                  );
+
+                  $term = get_term ($original_term_id, $taxonomy_name);
+
+                  do_action ('wpml_switch_language', null); // restore the current language
+                }
+
+
                 $post_term_name = strtolower ($term->name);
                 $post_term_slug = strtolower ($term->slug);
                 $post_taxonomy  = strtolower ($term->taxonomy);
@@ -10955,6 +11111,10 @@ function ai_register_global_fields () {
   new ai_global_fileds ();
 }
 
+function ai_contains_only_img_tag ($html) {
+  return (bool) preg_match ('/^\s*<img\b[^>]*>\s*$/i', $html);
+}
+
 define ('AI_MAX_GLOBAL_FIELD_PAGES',     4);
 define ('AI_MAX_GLOBAL_FIELDS',         40);
 
@@ -11680,8 +11840,8 @@ class ai_global_fileds {
                         <span class="ai-close-button" index="<?php echo $field_index; ?>" viewport-index="<?php echo $viewport_index; ?>" <?php echo $image_url != '' ? 'style="display: block;"' : '' ?>></span>
                         <div class="ai-field-image ai-field-image-<?php echo $field_index; ?> ai-field-image-viewport-<?php echo $viewport_index; ?>" style="<?php echo $image_url != '' ? 'background: url(' . $image_url . ') 0% 0% / cover;' : '' ?>"
                           title="<?php _e ('Select image', 'ad-inserter'); ?>" image-id="<?php echo $id; ?>" remote-image-id="<?php echo $remote_id; ?>" image-url="<?php echo $image_url; ?>"
-                          image-html="<?php echo $image_html; ?>" link-url="<?php echo $link_url; ?>" new-tab="<?php echo $new_tab; ?>"
-                          viewports="<?php echo $viewports; ?>" <?php echo $image_url != '' ? 'image-ok="1"' : '' ?> index="<?php echo $field_index; ?>" viewport-index="<?php echo $viewport_index; ?>">
+                          image-html="<?php echo esc_attr ($image_html); ?>" link-url="<?php echo $link_url; ?>" new-tab="<?php echo $new_tab; ?>"
+                          viewports="<?php echo esc_attr ($viewports); ?>" <?php echo $image_url != '' ? 'image-ok="1"' : '' ?> index="<?php echo $field_index; ?>" viewport-index="<?php echo $viewport_index; ?>">
                           <?php echo $image_url == '' ? AI_TEXT_MEDIA_IMAGE : ($image_blocked ? __('HTTP IMAGE BLOCKED', 'ad-inserter') : ' ') ?>
                         </div>
                         <div class="ai-field-image-viewports"><?php echo $image_url != '' ? implode (', ', $viewport_names) : "&nbsp; &nbsp;"; ?></div>
@@ -12696,6 +12856,15 @@ jQuery (document).find ('[title]')
                   $post_field = base64_decode (substr ($post_field, 4), true);
                 }
 
+                $unfiltered_html = $ai_wp_data [AI_UNFILTERED_HTML] && current_user_can ('unfiltered_html');
+                if (defined ('DISALLOW_UNFILTERED_HTML') && DISALLOW_UNFILTERED_HTML) {
+                  $unfiltered_html = false;
+                }
+
+                if (!$unfiltered_html) {
+                  $post_field = wp_kses ($post_field, 'post');
+                }
+
                 $ai_db_options [$block][AI_OPTION_CODE] = $post_field;
                 ai_save_options ($ai_db_options, null, null, null, $remote_page);
                 unset ($ai_global_fields [$field_index]);
@@ -12711,11 +12880,11 @@ jQuery (document).find ('[title]')
                       if ($image_data ['id'] == 0) {
 
                         if (isset ($image_data ['remote_id']) && $image_data ['remote_id'] != 0) {
-                          $post_field [$index]['id'] = $image_data ['remote_id'];
+                          $post_field [$index]['id'] = (int) $image_data ['remote_id'];
                         }
 
                         elseif (defined ('AD_INSERTER_WEBSITES') && isset ($image_data ['html']) && $image_data ['html'] != '' && is_numeric ($image_data ['html'])) {
-                          $local_image_id = $image_data ['html'];
+                          $local_image_id = (int) $image_data ['html'];
 
                           $current_screen = get_current_screen ();
                           $ai_remote_global_fields_pos = strpos ($current_screen->base, 'ai-remote-global-fields-');
@@ -12774,11 +12943,34 @@ jQuery (document).find ('[title]')
                             }
                           }
                         }
+
                         unset ($post_field [$index]['remote_id']);
 
                         // Generate image HTML code for local images on remote websites
                         if (isset ($image_data ['html']) && $image_data ['html'] != '' && is_numeric ($image_data ['html'])) {
                           $post_field [$index]['html'] = base64_encode (wp_get_attachment_image ($image_data ['html'], 'full', false));
+                        }
+                      }
+
+                      if (isset ($image_data ['html']) && $image_data ['html'] != '' && !is_numeric ($image_data ['html'])) {
+                        if (!ai_contains_only_img_tag ($image_data ['html'])) {
+                          $post_field [$index]['html'] = '';
+                        }
+                      }
+
+                      if (isset ($post_field [$index]['html'])) {
+                        $post_field [$index]['html'] = esc_url_raw ($post_field [$index]['html']);
+                      }
+                      if (isset ($post_field [$index]['link'])) {
+                        $post_field [$index]['link'] = esc_url_raw ($post_field [$index]['link']);
+                      }
+                      if (isset ($post_field [$index]['new-tab'])) {
+                        $post_field [$index]['new-tab'] = (int) $post_field [$index]['new-tab'];
+                      }
+                      if (isset ($post_field [$index]['viewports'])) {
+                        $post_field [$index]['viewports'] = array_slice ($post_field [$index]['viewports'], 0, 30);
+                        foreach ($post_field [$index]['viewports'] as $viewport_index => $viewport_value) {
+                          $post_field [$index]['viewports'][$viewport_index] = (int) (bool) $post_field [$index]['viewports'][$viewport_index];
                         }
                       }
                     }

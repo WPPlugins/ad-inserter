@@ -38,7 +38,7 @@ if (!defined( 'AD_INSERTER_NAME'))
   define ('AD_INSERTER_NAME', 'Ad Inserter');
 
 if (!defined( 'AD_INSERTER_VERSION'))
-  define ('AD_INSERTER_VERSION', '2.8.20');
+  define ('AD_INSERTER_VERSION', '2.8.20-8');
 
 if (!defined ('AD_INSERTER_PLUGIN_BASENAME'))
   define ('AD_INSERTER_PLUGIN_BASENAME', plugin_basename (__FILE__));
@@ -1268,7 +1268,8 @@ define ('AI_ACTIVE_GROUP_NAMES',         80);
 define ('AI_NO_JQUERY_CODE',             81);
 define ('AI_NO_GROUP_ACTIVATION',        82);
 define ('AI_BLOCK_OVERRIDE_STICKY',      83);
-
+define ('AI_CODE_HASHES',                84);
+define ('AI_WPML',                       85);
 
 define ('AI_CONTEXT_NONE',                0);
 define ('AI_CONTEXT_CONTENT',             1);

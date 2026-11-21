@@ -333,7 +333,7 @@ function generate_settings_form (){
 
 <?php if (!is_multisite() || is_main_site () ) : ?>
 <?php if (!function_exists ('ai_data_2') && file_exists (AD_INSERTER_PLUGIN_DIR.'includes/js/ai-load.js')) : ?>
-      <span class="checkbox-button dashicons dashicons-buddicons-forums" onclick="window.open('https://adinserter.pro/about')" ></span>
+      <span class="checkbox-button dashicons dashicons-buddicons-forums" onclick="window.open('https://adinserter.pro/about')"></span>
 <?php endif; ?>
 
 <!--      <label id="ai-ads-txt" class="checkbox-button iab-ads-txt" title="<?php _e ('Edit ads.txt file', 'ad-inserter'); ?>" ><span class="checkbox-icon icon-ads-txt"></span></label>-->

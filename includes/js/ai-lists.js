@@ -344,6 +344,16 @@ function nextAll (element, selector) {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 5
 //    var ai_debug = false;
 
+    if (typeof ai_code_hashes !== 'undefined') {
+      filtered_elements = [];
+      ai_list_blocks.forEach ((element, i) => {
+        if (element.hasAttribute ('data-code-hash')) {
+          if (ai_code_hashes.includes (element.dataset.codeHash)) filtered_elements.push (element);
+        }
+      });
+      ai_list_blocks = filtered_elements;
+    }
+
     if (!ai_list_blocks.length) return;
 
     if (ai_debug) console.log ("AI LISTS:", ai_list_blocks.length, 'blocks');
@@ -1130,26 +1140,37 @@ function nextAll (element, selector) {
           }
 
           if (el.hasAttribute ('data-fallback-code')) {
-            var block_code = b64d (el.dataset.fallbackCode);
 
-            var range = document.createRange ();
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (block_code);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI LIST', 'range.createContextualFragment ERROR:', err);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-fallback-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.fallbackCodeHash);
+              } else insert_code = false;
             }
 
-            if (fragment_ok) {
-              el.append (fragment);
-            }
+            if (insert_code) {
+              var block_code = b64d (el.dataset.fallbackCode);
 
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
-            if (ai_debug) console.log ('');
+              var range = document.createRange ();
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (block_code);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI LIST', 'range.createContextualFragment ERROR:', err);
+              }
 
-            ai_process_element_lists (el);
+              if (fragment_ok) {
+                el.append (fragment);
+              }
+
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+              if (ai_debug) console.log ('');
+
+              ai_process_element_lists (el);
+            } else if (ai_debug) console.log ('AI SCHEDULING INSERT CODE HASH CHECK FAILED');
+
           }  else {
                el.style.display = 'none'; // .ai-list-data
 
@@ -1199,35 +1220,45 @@ function nextAll (element, selector) {
 
           if (el.hasAttribute ('data-code')) {
 
-            var block_code = b64d (el.dataset.code);
-
-            var range = document.createRange ();
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (block_code);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI LISTS', 'range.createContextualFragment ERROR:', err);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+              } else insert_code = false;
             }
 
-//            if ($(this).closest ('head').length != 0) {
-//              $(this).after (block_code);
-//              if (!ai_debug) $(this).remove ();
-//            } else $(this).append (block_code);
+            if (insert_code) {
+              var block_code = b64d (el.dataset.code);
 
-            if (fragment_ok) {
-              if (el.closest ('head') != null) {
-                el.parentNode.insertBefore (fragment, el.nextSibling);
-                if (!ai_debug) el.remove ();
-              } else el.append (fragment);
-            }
+              var range = document.createRange ();
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (block_code);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI LISTS', 'range.createContextualFragment ERROR:', err);
+              }
 
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+  //            if ($(this).closest ('head').length != 0) {
+  //              $(this).after (block_code);
+  //              if (!ai_debug) $(this).remove ();
+  //            } else $(this).append (block_code);
 
-            if (ai_debug) console.log ('');
+              if (fragment_ok) {
+                if (el.closest ('head') != null) {
+                  el.parentNode.insertBefore (fragment, el.nextSibling);
+                  if (!ai_debug) el.remove ();
+                } else el.append (fragment);
+              }
 
-            ai_process_element_lists (el);
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+
+              if (ai_debug) console.log ('');
+
+              ai_process_element_lists (el);
+            } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
+
           }
         }
 

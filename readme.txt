@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: ads, adsense, amp, ad rotation, ad manager
 Requires at least: 5.0
 Tested up to: 7.2
-Requires PHP: 7.4
+Requires PHP: 8.1
 Stable tag: 2.8.20
 License: GPLv3
 
@@ -362,6 +362,17 @@ If you are not happy to reveal this information and you have opted in, simply di
 
 == Changelog ==
 
+= 2.8.21 =
+- Security fix for Cross Site Scripting (XSS) (credits to Filip Kowalski)
+- Security fix for Stored Cross-Site Scripting via Global Custom Fields (credits to Klaudia Gackowska)
+- Security fix for Stored Cross-Site Scripting via Output-Buffering Marker Injection via Guest Comment (credits to Maciej Komorowski)
+- Security fix for Content Injection (credits to Siyang Wu)
+- Updated MaxMind library (Pro only)
+- Updated tcpdf library (Pro only)
+- Fixes for compatibility with PHP 8.5
+- Fixes for WPML translated taxonomy conditions
+- Few minor bug fixes, cosmetic changes and code improvements
+
 = 2.8.20 =
 - Security fix for arbitrary shortcode execution (credits to Kuba)
 - Security fix for cross Site Scripting (XSS) (credits to Md. Moniruzzaman Prodhan)
@@ -438,6 +449,17 @@ If you are not happy to reveal this information and you have opted in, simply di
 For the changelog of earlier versions, please refer to the separate changelog.txt file.
 
 == Upgrade Notice ==
+
+= 2.8.21 =
+Security fix for Cross Site Scripting (XSS) (credits to Filip Kowalski);
+Security fix for Stored Cross-Site Scripting via Global Custom Fields (credits to Klaudia Gackowska);
+Security fix for Stored Cross-Site Scripting via Output-Buffering Marker Injection via Guest Comment (credits to Maciej Komorowski);
+Security fix for Content Injection (credits to Siyang Wu);
+Updated MaxMind library (Pro only);
+Updated tcpdf library (Pro only);
+Fixes for compatibility with PHP 8.5;
+Fixes for WPML translated taxonomy conditions;
+Few minor bug fixes, cosmetic changes and code improvements
 
 = 2.8.20 =
 Security fix for arbitrary shortcode execution (credits to Kuba);

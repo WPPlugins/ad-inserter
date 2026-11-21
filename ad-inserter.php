@@ -21,6 +21,17 @@ License: GPLv3
 
 Change Log
 
+Ad Inserter 2.8.21 - 2026-11-17
+- Security fix for Cross Site Scripting (XSS) (credits to Filip Kowalski)
+- Security fix for Stored Cross-Site Scripting via Global Custom Fields (credits to Klaudia Gackowska)
+- Security fix for Stored Cross-Site Scripting via Output-Buffering Marker Injection via Guest Comment (credits to Maciej Komorowski)
+- Security fix for Content Injection (credits to Siyang Wu)
+- Updated MaxMind library (Pro only)
+- Updated tcpdf library (Pro only)
+- Fixes for compatibility with PHP 8.5
+- Fixes for WPML translated taxonomy conditions
+- Few minor bug fixes, cosmetic changes and code improvements
+
 Ad Inserter 2.8.20 - 2026-10-27
 - Security fix for arbitrary shortcode execution (credits to Kuba)
 - Security fix for cross Site Scripting (XSS) (credits to Md. Moniruzzaman Prodhan)
@@ -819,6 +830,8 @@ function ai_buffering_end () {
 
     $body = preg_replace ('/<!-- ' . AI_CONTENT_MARKER . " (\d+) -->\n/", '', $body);
 
+    $body = str_replace (array (AI_MARKER_START, AI_MARKER_END), '', $body);
+
     if (isset ($ai_db_options_extract [HTML_ELEMENT_HOOK_BLOCKS][$ai_wp_data [AI_WP_PAGE_TYPE]]) && class_exists ('DOMDocument')) {
 
       $php_version = explode ('.', PHP_VERSION);
@@ -938,40 +951,42 @@ function ai_buffering_end () {
                 break;
             }
 
-            switch ($insertion_position) {
-              case 'before':
-              case 'replace-element':
-                $tag_string = "<{$tag}";
-                break;
-              case 'after':
-                if (in_array ($tag, $no_closing_tag)) $tag_string = '>'; else $tag_string = "</{$tag}>";
-                break;
-              case 'prepend':
-              case 'replace-content':
-                $tag_string = "<{$tag}[^>]*>";
-                break;
-              case 'append':
-                $tag_string = "</{$tag}>";
-                break;
-            }
+            if (preg_match ('/^[a-zA-Z][a-zA-Z0-9-]*\z/', $tag) === 1) {
+              switch ($insertion_position) {
+                case 'before':
+                case 'replace-element':
+                  $tag_string = "<{$tag}";
+                  break;
+                case 'after':
+                  if (in_array ($tag, $no_closing_tag)) $tag_string = '>'; else $tag_string = "</{$tag}>";
+                  break;
+                case 'prepend':
+                case 'replace-content':
+                  $tag_string = "<{$tag}[^>]*>";
+                  break;
+                case 'append':
+                  $tag_string = "</{$tag}>";
+                  break;
+              }
 
-            preg_match_all ("#{$tag_string}#i", $content_before, $tag_matches);
+              preg_match_all ("#{$tag_string}#i", $content_before, $tag_matches);
 
-            switch ($insertion_position) {
-              case 'before':
-              case 'replace-element':
-                $insertions []= array ($tag_string, count ($tag_matches [0]) + 1);
-                break;
-              case 'after':
-                $insertions []= array ($tag_string, count ($tag_matches [0]));
-                break;
-              case 'replace-content':
-              case 'prepend':
-                $insertions []= array ($tag_string, count ($tag_matches [0]));
-                break;
-              case 'append':
-                $insertions []= array ($tag_string, count ($tag_matches [0]) + 1);
-                break;
+              switch ($insertion_position) {
+                case 'before':
+                case 'replace-element':
+                  $insertions []= array ($tag_string, count ($tag_matches [0]) + 1);
+                  break;
+                case 'after':
+                  $insertions []= array ($tag_string, count ($tag_matches [0]));
+                  break;
+                case 'replace-content':
+                case 'prepend':
+                  $insertions []= array ($tag_string, count ($tag_matches [0]));
+                  break;
+                case 'append':
+                  $insertions []= array ($tag_string, count ($tag_matches [0]) + 1);
+                  break;
+              }
             }
 
             continue;
@@ -1010,7 +1025,8 @@ function ai_buffering_end () {
         foreach ($insertions as $insertion) {
           $tag          = $insertion [0];
           $tag_counter  = $insertion [1];
-          preg_match_all ("#$tag#i", $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
+//          preg_match_all ("#$tag#i", $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
+          preg_match_all ('#'.preg_quote ($tag, '#').'#i', $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
           if (isset ($org_tag_matches [0][$tag_counter - 1])) {
 
             switch ($insertion_position) {
@@ -1041,7 +1057,8 @@ function ai_buffering_end () {
             foreach ($insertions2 as $insertion) {
               $tag          = $insertion [0];
               $tag_counter  = $insertion [1];
-              preg_match_all ("#$tag#i", $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
+//              preg_match_all ("#$tag#i", $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
+              preg_match_all ('#'.preg_quote ($tag, '#').'#i', $body, $org_tag_matches, PREG_OFFSET_CAPTURE);
               if (isset ($org_tag_matches [0][$tag_counter - 1])) {
 
                 switch ($insertion_position) {
@@ -1101,9 +1118,11 @@ function ai_buffering_end () {
         $ai_db_options_extract [$action . CUSTOM_HOOK_BLOCKS][$ai_wp_data [AI_WP_PAGE_TYPE]] = array ($block);
 
         foreach ($insertion_offsets as $index => $insertion_offset) {
-          if ($multibyte)
+          if ($multibyte) {
             $new_content .= mb_substr ($body, $current_offset, $insertion_offset - $current_offset);
+          } else {
               $new_content .= substr ($body, $current_offset, $insertion_offset - $current_offset);
+            }
 
           switch ($insertion_position) {
             case 'replace-content':
@@ -2949,6 +2968,10 @@ function add_footer_inline_scripts () {
 
     ob_start ();
 
+    if (!defined ('AI_NO_CODE_HASH_CHECKS')) {
+      echo "const ai_code_hashes = [", !empty ($ai_wp_data [AI_CODE_HASHES]) ? "'".implode ("', '", $ai_wp_data [AI_CODE_HASHES])."'" : '', "];\n";
+    }
+
     if ($ai_wp_data [AI_FRONTEND_JS_DEBUGGING]) {
       $js_code = "";
 
@@ -4435,6 +4458,56 @@ function ai_show_processing_log () {
   return ($ai_wp_data [AI_WP_DEBUGGING] & AI_DEBUG_PROCESSING) != 0 && (get_remote_debugging () || (isset ($ad_inserter_globals [$global_name]) && $ad_inserter_globals [$global_name] == 1) || ($ai_wp_data [AI_WP_USER] & AI_USER_ADMINISTRATOR) != 0);
 }
 
+
+function ai_write_taxonomies_info () {
+  $category_data = get_the_category();
+  $categories = array ();
+  foreach ($category_data as $category) {
+    $categories []= $category->name . ' ('.$category->slug.')';
+  }
+  echo 'CATEGORIES:              ', implode (', ', $categories), "\n";
+
+  $category_data = get_categories ();
+  $categories = array ();
+  foreach ($category_data as $category) {
+    if (ai_post_is_in_child_categories ($category->slug)) {
+      $categories []= $category->name . ' ('.$category->slug.')';
+    }
+  }
+  echo 'PARENT CATEGORIES:       ', implode (', ', $categories), "\n";
+  echo 'PRIMARY CATEGORY:        ', ai_primary_category (), "\n";
+  $tag_data = wp_get_post_tags (get_the_ID());
+  $tags = array ();
+  foreach ($tag_data as $tag) {
+    $tags []= $tag->name . ' ('.$tag->slug.')';
+  }
+  echo 'TAGS:                    ', implode (', ', $tags), "\n";
+
+  $taxonomies = array ();
+  $taxonomy_names = get_post_taxonomies ();
+  foreach ($taxonomy_names as $taxonomy_name) {
+    $terms = get_the_terms (0, $taxonomy_name);
+    if (is_array ($terms)) {
+      foreach ($terms as $term) {
+        $taxonomies [] = strtolower ($term->taxonomy) . ':' . strtolower ($term->slug);
+      }
+    }
+  }
+  echo 'TAXONOMIES:              ', implode (', ', $taxonomies), "\n";
+
+  $taxonomy_data = get_taxonomies ();
+  $taxonomies = array ();
+  foreach ($taxonomy_data as $taxonomy) {
+    $terms = get_terms ($taxonomy);
+    foreach ($terms as $term) {
+      if (ai_post_is_in_child_taxonomies ($taxonomy, $term->slug)) {
+        $taxonomies []= $term->name . ' ('.$taxonomy.':'.$term->slug.')';
+      }
+    }
+  }
+  echo 'PARENT TAXONOMIES:       ', implode (', ', $taxonomies), "\n";
+}
+
 function ai_write_debug_info ($write_processing_log = false) {
   global $block_object, $ai_last_time, $ai_total_plugin_time, $ai_total_block_php_time, $ai_total_hook_php_time, $ai_processing_log, $ai_db_options_extract, $ai_wp_data, $ai_db_options, $block_insertion_log,
          $ai_custom_hooks, $version_string, $subversion_string, $filter_hooks, $wpdb;
@@ -4559,52 +4632,36 @@ function ai_write_debug_info ($write_processing_log = false) {
 //  $author_name  = get_the_author_meta ('first_name') . " " . get_the_author_meta ('last_name');
 
 
-      $category_data = get_the_category();
-      $categories = array ();
-      foreach ($category_data as $category) {
-        $categories []= $category->name . ' ('.$category->slug.')';
-      }
-      echo 'CATEGORIES:              ', implode (', ', $categories), "\n";
 
-      $category_data = get_categories ();
-      $categories = array ();
-      foreach ($category_data as $category) {
-        if (ai_post_is_in_child_categories ($category->slug)) {
-          $categories []= $category->name . ' ('.$category->slug.')';
+      $default_lang = apply_filters ('wpml_default_language', null);
+      if (!empty ($default_lang)) {
+        // WPML
+        echo 'WPML DEFAULT LANGUAGE:   ', $default_lang, "\n";
+
+        $language_code = apply_filters(
+          'wpml_element_language_code',
+          null,
+          [
+            'element_id'   => get_the_ID (),
+            'element_type' => get_post_type ()
+          ]
+        );
+
+        if ($language_code != $default_lang) {
+          do_action ('wpml_switch_language', $default_lang);
+
+          echo '----------------------', "\n";
+          ai_write_taxonomies_info ();
+          echo '----------------------', "\n";
+
+          do_action ('wpml_switch_language', null); // restore the current language
+
+          echo 'WPML CURRENT LANGUAGE:   ', $language_code, "\n";
         }
       }
-      echo 'PARENT CATEGORIES:       ', implode (', ', $categories), "\n";
-      echo 'PRIMARY CATEGORY:        ', ai_primary_category (), "\n";
-      $tag_data = wp_get_post_tags (get_the_ID());
-      $tags = array ();
-      foreach ($tag_data as $tag) {
-        $tags []= $tag->name . ' ('.$tag->slug.')';
-      }
-      echo 'TAGS:                    ', implode (', ', $tags), "\n";
 
-      $taxonomies = array ();
-      $taxonomy_names = get_post_taxonomies ();
-      foreach ($taxonomy_names as $taxonomy_name) {
-        $terms = get_the_terms (0, $taxonomy_name);
-        if (is_array ($terms)) {
-          foreach ($terms as $term) {
-            $taxonomies [] = strtolower ($term->taxonomy) . ':' . strtolower ($term->slug);
-          }
-        }
-      }
-      echo 'TAXONOMIES:              ', implode (', ', $taxonomies), "\n";
 
-      $taxonomy_data = get_taxonomies ();
-      $taxonomies = array ();
-      foreach ($taxonomy_data as $taxonomy) {
-        $terms = get_terms ($taxonomy);
-        foreach ($terms as $term) {
-          if (ai_post_is_in_child_taxonomies ($taxonomy, $term->slug)) {
-            $taxonomies []= $term->name . ' ('.$taxonomy.':'.$term->slug.')';
-          }
-        }
-      }
-      echo 'PARENT TAXONOMIES:       ', implode (', ', $taxonomies), "\n";
+      ai_write_taxonomies_info ();
 
       if (isset ($_GET [AI_URL_DEBUG_META]) && ($ai_wp_data [AI_WP_USER] & AI_USER_ADMINISTRATOR)) {
         $post_meta = get_post_meta (get_the_ID());
@@ -7360,6 +7417,20 @@ function ai_generate_extract (&$settings) {
   $ai_wp_data [AI_LAZY_LOADING]              = false;
   $ai_wp_data [AI_GEOLOCATION]               = false;
 
+  // Extract blocks used as fallbacks
+  $fallback_blocks = array ();
+  for ($block = 1; $block <= 96; $block ++) {
+
+    if (!isset ($settings [$block])) continue;
+
+    $obj->number = $block;
+    $obj->wp_options = $settings [$block];
+
+    if (intval ($obj->get_scheduling_fallback ()) >= 1) $fallback_blocks [] = intval ($obj->get_scheduling_fallback ());
+    elseif (intval ($obj->get_limits_fallback ()) >= 1) $fallback_blocks [] = intval ($obj->get_limits_fallback ());
+    elseif (intval ($obj->get_adb_block_replacement ()) >= 1) $fallback_blocks [] = intval ($obj->get_adb_block_replacement ());
+  }
+
   for ($block = 1; $block <= 96; $block ++) {
 
     if (!isset ($settings [$block])) continue;
@@ -7469,7 +7540,8 @@ function ai_generate_extract (&$settings) {
     $manual_widget       = $obj->get_enable_widget()     == AI_ENABLED;
     $manual_shortcode    = $obj->get_enable_manual()     == AI_ENABLED;
     $manual_php_function = $obj->get_enable_php_call()   == AI_ENABLED;
-    if ($enabled_insertion && ($automatic || ($manual_widget && in_array ($block, $widget_blocks)) || $manual_shortcode || $manual_php_function)) {
+    // Block may habve disabled automatic insertion but be used as a fallback block
+    if ($enabled_insertion && ($automatic || ($manual_widget && in_array ($block, $widget_blocks)) || $manual_shortcode || $manual_php_function || in_array ($block, $fallback_blocks))) {
       $active_blocks []= $block;
 
       $obj->extract_features ();
@@ -8733,7 +8805,6 @@ function get_global_fields ($remote_page = false) {
 function adinserter_global_custom_field_value ($field_index, $field_data, $data_as_array = false) {
   global $block_object, $ai_wp_data, $ai_global_fileds_settings;
 
-//  $ai_global_fields = get_option (AI_GLOBAL_FIELDS_NAME, array ());
   $ai_global_fields = get_global_fields ();
 
   switch ($field_data ['type']) {
@@ -8854,13 +8925,10 @@ function adinserter_global_custom_field_value ($field_index, $field_data, $data_
           $images_data = array ($images_data);
         }
 
-//        $image_data = (array) $image_data;
-
         if ($data_as_array) {
           return $images_data;
         }
 
-//        if (isset ($images_data [0]) && json_encode ($images_data [0]['viewports']) == $all_viewports_json) {
         if (isset ($images_data [0]['viewports']) && json_encode ($images_data [0]['viewports']) == $all_viewports_json) {
           $image_data = $images_data [0];
 
@@ -8869,9 +8937,9 @@ function adinserter_global_custom_field_value ($field_index, $field_data, $data_
               $field_value = wp_get_attachment_image ($image_data ['id'], 'full', false);
             } else {
                 if (isset ($image_data ['html']) && $image_data ['html'] != '') {
-                  $field_value = base64_decode ($image_data ['html']);
+                  $field_value = wp_kses_post (base64_decode ($image_data ['html']));
                 } else
-                $field_value = '<img src="'. $image_data ['url'] . '" class="attachment-full size-full">';
+                $field_value = '<img src="'. esc_url ($image_data ['url']) . '" class="attachment-full size-full">';
               }
 
             if (isset ($image_data ['link']) && $image_data ['link'] != '') {
@@ -8897,9 +8965,9 @@ function adinserter_global_custom_field_value ($field_index, $field_data, $data_
                   $image_html = wp_get_attachment_image ($image_data ['id'], 'full', false);
                 } else {
                     if (isset ($image_data ['html']) && $image_data ['html'] != '') {
-                      $image_html = base64_decode ($image_data ['html']);
+                      $image_html = wp_kses_post (base64_decode ($image_data ['html']));
                     } else
-                    $image_html = '<img src="'. $image_data ['url'] . '" class="attachment-full size-full">';
+                    $image_html = '<img src="'. esc_url ($image_data ['url']) . '" class="attachment-full size-full">';
                   }
 
                 if (isset ($image_data ['link']) && $image_data ['link'] != '') {
@@ -9022,7 +9090,6 @@ function adinserter_global_custom_field ($field = '', $data_as_array = false) {
     $field_index = intval ($field) - 1;
 
     global $ai_global_fileds_settings;
-
 
     if (isset ($ai_global_fileds_settings ['fields'][$field_index])) {
       $global_page = $ai_global_fileds_settings ['fields'][$field_index]['page'];
@@ -10218,7 +10285,9 @@ function ai_process_shortcode (&$block, $atts) {
     if ($parameters ['url-parameter'] != '') {
       $url_parameter = trim ($parameters ['url-parameter']);
 
-      return isset ($_GET [$url_parameter]) && is_string ($_GET [$url_parameter]) ? esc_js (htmlspecialchars ($_GET [$url_parameter], ENT_QUOTES)) : '';
+      $parameter = isset ($_GET [$url_parameter]) && is_string ($_GET [$url_parameter]) ? esc_js (htmlspecialchars ($_GET [$url_parameter], ENT_QUOTES)) : '';
+
+      return str_replace (array ('[', ']', '%5B', '%5D'), array ('&lsqb;', '&rsqb;', '&lsqb;', '&rsqb;'), $parameter);
     }
 
     if ($parameters ['random'] != '' || isset ($atts ['RANDOM']) || isset ($atts ['random'])) {
@@ -12297,6 +12366,22 @@ function ai_post_is_in_child_taxonomies ($taxonomy, $term) {
   return false;
 }
 
+function ai_has_tag ($tags, $post_id) {
+  $default_lang = apply_filters ('wpml_default_language', null);
+  if (!empty ($default_lang)) {
+    // WPML
+    do_action ('wpml_switch_language', $default_lang);
+  }
+
+  $has_tags = has_tag ($tags, $post_id);
+
+  if (!empty ($default_lang)) {
+    // WPML
+    do_action ('wpml_switch_language', null); // restore the current language
+  }
+  return $has_tags;
+}
+
 function ai_get_permalink ($id) {
   if (defined ('AI_CONNECTED_WEBSITE')) {
     $connected_website = get_transient (AI_CONNECTED_WEBSITE);
@@ -12413,9 +12498,11 @@ function ai_process_viewport_separators ($code, $shortcode_data) {
 
         $ai_code = base64_encode (ai_strip_js_markers ($viewport_code));
 
-        $processed_code .= "<div class='{$viewport_classes} {$code_id}' data-insertion-position='after' data-selector='.{$code_id}' data-insertion-no-dbg data-code='$ai_code'></div>\n";
+        $code_hash = md5 ($ai_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+        $processed_code .= "<div class='{$viewport_classes} {$code_id}' data-insertion-position='after' data-selector='.{$code_id}' data-insertion-no-dbg data-code='$ai_code' data-code-hash='$code_hash'></div>\n";
         if (!get_disable_js_code ()) {
-//          $js_code = "ai_insert_code (document.getElementsByClassName ('$code_id') [0]);";
           $js_code = "ai_insert_code_by_class ('$code_id');";
 
           $processed_code .= ai_strip_js_markers (ai_js_dom_ready ($js_code));
@@ -12465,7 +12552,10 @@ function ai_process_fallback_separator ($code, $shortcode_data) {
       if ($insert_code) {
         $ai_code = base64_encode (ai_strip_js_markers (trim ($codes [1])));
 
-        $processed_code .= "<div data-code='$ai_code'></div>\n";
+        $code_hash = md5 ($ai_code . rand (1, 1000000000));
+        $ai_wp_data [AI_CODE_HASHES][] = $code_hash;
+
+        $processed_code .= "<div data-code='$ai_code' data-code-hash='$code_hash'></div>\n";
       } else {
           $processed_code .= "<div style='display: none;'>\n" . trim ($codes [1]) . "\n</div>\n";
         }
@@ -12510,7 +12600,7 @@ function ai_is_referrer_search_engine () {
 }
 
 function ai_clean_shortcode_data ($data) {
-  return str_replace (array ('[', ']', '`', '$', '\\', '\''), array ('&lsqb;', '&rsqb;', ' &#96;', '&dollar;', '&bsol;', '&#39;'), esc_js (esc_html ($data)));
+  return str_replace (array ('[', ']', '`', '$', '\\', '\''), array ('&lsqb;', '&rsqb;', '&#96;', '&dollar;', '&bsol;', '&#39;'), esc_js (esc_html ($data)));
 }
 
 function replace_ai_tags ($content, $general_tag = '') {
@@ -12747,6 +12837,7 @@ function replace_ai_tags ($content, $general_tag = '') {
     if ($host == '' && isset ($_SERVER ['SERVER_NAME'])) {
       $host = $_SERVER ['SERVER_NAME'];
     }
+
     $url = esc_url (remove_debug_parameters_from_url ((isset ($_SERVER ['HTTPS']) && $_SERVER ['HTTPS'] === 'on' ? "https" : "http") . '://'. $host . $_SERVER ['REQUEST_URI']));
     $url_encoded = urlencode ($url);
 
@@ -13103,6 +13194,8 @@ $ai_wp_data [AI_CLIENT_SIDE_FILTER_CHECKS] = false;
 $ai_wp_data [AI_PARALLAX]               = false;
 $ai_wp_data [AI_PHP_PROCESSING]         = ai_php_enabled ();
 $ai_wp_data [AI_UNFILTERED_HTML]        = !(defined ('DISALLOW_UNFILTERED_HTML') && DISALLOW_UNFILTERED_HTML);
+$ai_wp_data [AI_CODE_HASHES]            = array ();
+$ai_wp_data [AI_WPML]                   = defined ('ICL_SITEPRESS_VERSION');
 
 $ai_w3tc_code = array ();
 $ai_w3tc_code_counter = 0;

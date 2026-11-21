@@ -1043,7 +1043,6 @@ ai_insert = function (insertion, selector, insertion_code) {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //    var ai_debug = false;
 
-//  if (selector.indexOf (':eq') != - 1) {
   // ***
   if (selector.indexOf (':eq(') != - 1) {
     var jq = window.jQuery && window.jQuery.fn;
@@ -1121,58 +1120,27 @@ ai_insert = function (insertion, selector, insertion_code) {
     }
 
     if (insertion == 'before') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element));
-//      } else
-
       element.parentNode.insertBefore (fragment, element);
     } else
     if (insertion == 'after') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element.nextSibling));
-//      } else
-
       element.parentNode.insertBefore (fragment, element.nextSibling);
     } else
     if (insertion == 'prepend') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element.firstChild));
-//      } else
-
       element.insertBefore (fragment, element.firstChild);
     } else
     if (insertion == 'append') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).appendTo (jQuery (element));
-//      } else
-
       element.insertBefore (fragment, null);
     } else
     if (insertion == 'replace-content') {
       element.innerHTML = '';
 
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).appendTo (jQuery (element));
-//      } else
-
       element.insertBefore (fragment, null);
     } else
     if (insertion == 'replace-element') {
-      // ***
-//      if (!fragment_ok) {
-//        jQuery (template.innerHTML).insertBefore (jQuery (element));
-//      } else
-
       element.parentNode.insertBefore (fragment, element);
 
       element.parentNode.removeChild (element);
     }
-//  });
     ai_process_elements ();
   };
 }
@@ -1224,45 +1192,49 @@ ai_insert_code = function (element) {
     var insertion_type = element.getAttribute ('data-insertion-position');
     var selector       = element.getAttribute ('data-selector');
 
+    var insert_code = true;
+    if (typeof ai_code_hashes !== 'undefined') {
+      if (element.hasAttribute ('data-code-hash')) {
+        insert_code = ai_code_hashes.includes (element.dataset.codeHash);
+      } else insert_code = false;
+    }
+
     if (insertion_code != null) {
-      if (insertion_type != null && selector != null) {
-        // ***
-        if (selector.indexOf (':eq(') != - 1) {
-          var jq = window.jQuery && window.jQuery.fn;
-          if (jq) {
-            var selector_exists = jQuery (selector).length;
-          } else var selector_exists = false;
-        } else var selector_exists = document.querySelectorAll (selector).length;
-
-        if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block, insertion_type, selector, selector_exists ? '' : 'NOT FOUND');
-
-        if (selector_exists) {
-          ai_insert (insertion_type, selector, b64d (insertion_code));
-          removeClass (element, 'ai-viewports');
-        }
-      } else {
-          if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block);
-
-          var range = document.createRange ();
-
-          var fragment_ok = true;
-          try {
-            var fragment = range.createContextualFragment (b64d (insertion_code));
-          }
-          catch (err) {
-            var fragment_ok = false;
-            if (ai_debug) console.log ('AI INSERT NEXT', 'range.createContextualFragment ERROR:', err.message);
-          }
-
+      if (insert_code) {
+        if (insertion_type != null && selector != null) {
           // ***
-//          if (!fragment_ok) {
-//            jQuery (b64d (insertion_code)).insertBefore (jQuery (element.nextSibling));
-//          } else
+          if (selector.indexOf (':eq(') != - 1) {
+            var jq = window.jQuery && window.jQuery.fn;
+            if (jq) {
+              var selector_exists = jQuery (selector).length;
+            } else var selector_exists = false;
+          } else var selector_exists = document.querySelectorAll (selector).length;
 
-          element.parentNode.insertBefore (fragment, element.nextSibling);
+          if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block, insertion_type, selector, selector_exists ? '' : 'NOT FOUND');
 
-          removeClass (element, 'ai-viewports');
-        }
+          if (selector_exists) {
+            ai_insert (insertion_type, selector, b64d (insertion_code));
+            removeClass (element, 'ai-viewports');
+          }
+        } else {
+            if (ai_debug) console.log ('AI ELEMENT VISIBLE: block', block);
+
+            var range = document.createRange ();
+
+            var fragment_ok = true;
+            try {
+              var fragment = range.createContextualFragment (b64d (insertion_code));
+            }
+            catch (err) {
+              var fragment_ok = false;
+              if (ai_debug) console.log ('AI INSERT NEXT', 'range.createContextualFragment ERROR:', err.message);
+            }
+
+            element.parentNode.insertBefore (fragment, element.nextSibling);
+
+            removeClass (element, 'ai-viewports');
+          }
+      } else if (ai_debug) console.log ('AI INSERT ELEMENT HASH CHECK FAILED');
     }
 
     insertion = true;
@@ -1376,55 +1348,6 @@ ai_insert_adsense_fallback_codes = function (adsense_unfilled_ins) {
   }
 }
 
-//ai_insert_fallback_codes = function () {
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
-////  var ai_debug = false;
-
-//  var ai_fallback_divs = document.getElementsByClassName ('ai-fallback-adsense');
-
-//  var fallback_check = ai_fallback_divs.length;
-//  if (ai_debug && fallback_check) {
-//    console.log ('');
-//    console.log ('AI FALLBACK CHECK ADSENSE:', ai_fallback_divs.length, 'block' + (ai_fallback_divs.length == 1 ? '' : 's')) ;
-//  }
-
-//  for (var adsense = 0; adsense < ai_fallback_divs.length; adsense ++) {
-//    var adsense_div = ai_fallback_divs [adsense];
-//    var adsense_unfilled_ins = adsense_div.querySelector ('ins.adsbygoogle[data-ad-status="filled"]');
-
-//    if (!!adsense_unfilled_ins) {
-//      adsense_unfilled_ins.style.display = "none";
-
-//      var fallback_div = adsense_div.nextElementSibling;
-//      var insert = !!fallback_div.getAttribute ('data-code');
-
-//      if (insert) {
-//        if (ai_debug) {
-//          var block = fallback_div.getAttribute ('data-block');
-//          console.log ('AI INSERT FALLBACK CODE FOR BLOCK', block);
-//        }
-
-//        var inserted = ai_insert_code (fallback_div);
-
-//        if (inserted) {
-//          ai_process_elements ();
-//        }
-//      } else {
-//          if (ai_debug) {
-//            var block = fallback_div.getAttribute ('data-block');
-//            console.log ('AI SHOW FALLBACK CODE FOR BLOCK', block);
-//          }
-
-//          fallback_div.style.display = "block";
-//        }
-//    }
-//  }
-
-//  if (ai_debug && fallback_check) {
-//    console.log ('');
-//  }
-//}
-
 ai_insert_code_by_class = function (id) {
   var ai_block_div = document.getElementsByClassName (id) [0];
 
@@ -1449,8 +1372,7 @@ ai_insert_client_code = function (id, len) {
   if (typeof ai_block_div != 'undefined') {
     var insertion_code = ai_block_div.getAttribute ('data-code');
 
-//    if (insertion_code != null && ai_check_block () && ai_check_and_insert_block ()) {
-    if (insertion_code != null && ai_check_block () /*&& ai_check_and_insert_block ()*/) {
+    if (insertion_code != null && ai_check_block ()) {
       ai_block_div.setAttribute ('data-code', insertion_code.substring (Math.floor (len / 19)));
       ai_insert_code_by_class (id);
       ai_block_div.remove();
@@ -1470,20 +1392,14 @@ function ai_process_elements () {
       }
 
       if (typeof ai_process_lists == 'function') {
-        // ***
-//        ai_process_lists (jQuery (".ai-list-data"));
         ai_process_lists ();
       }
 
       if (typeof ai_process_ip_addresses == 'function') {
-        // ***
-//        ai_process_ip_addresses (jQuery (".ai-ip-data"));
         ai_process_ip_addresses ();
       }
 
       if (typeof ai_process_filter_hooks == 'function') {
-        // ***
-//        ai_process_filter_hooks (jQuery (".ai-filter-check"));
         ai_process_filter_hooks ();
       }
 
@@ -2513,8 +2429,8 @@ function ai_json_data (cookie) {
 }
 
 ai_check_block = function (block) {
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 1
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 1
+//  var ai_debug = false;
 
   if (block == null) {
     return true;
@@ -2742,8 +2658,8 @@ ai_check_block = function (block) {
 
 ai_check_and_insert_block = function (block, id) {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 2
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 2
+//  var ai_debug = false;
 
   if (block == null) {
     return true;
@@ -2765,6 +2681,7 @@ ai_check_and_insert_block = function (block, id) {
         if (ai_debug) console.log ('AI CHECK FAILED, INSERTING FALLBACK BLOCK', ai_block_div.getAttribute ('limits-fallback'));
 
         ai_block_div.setAttribute ('data-code', ai_block_div.getAttribute ('data-fallback-code'));
+        ai_block_div.setAttribute ('data-code-hash', ai_block_div.getAttribute ('data-fallback-code-hash'));
 
         if (wrapping_div != null && wrapping_div.hasAttribute ('data-ai')) {
           if (ai_block_div.hasAttribute ('fallback-tracking') && ai_block_div.hasAttribute ('fallback_level')) {
@@ -2834,8 +2751,8 @@ ai_check_and_insert_block = function (block, id) {
 
 ai_load_cookie = function () {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 3
+//  var ai_debug = false;
 
   var ai_cookie_name = 'aiBLOCKS';
 
@@ -2856,8 +2773,8 @@ ai_load_cookie = function () {
 
 function ai_get_cookie (block, property) {
 
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 4
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 4
+//  var ai_debug = false;
 
   var value = '';
   var ai_cookie = ai_load_cookie ();
@@ -2884,8 +2801,8 @@ ai_set_cookie = function (block, property, value) {
   }
 
   var ai_cookie_name = 'aiBLOCKS';
-//  var ai_debug = typeof ai_debugging !== 'undefined'; // 5
-  var ai_debug = false;
+  var ai_debug = typeof ai_debugging !== 'undefined'; // 5
+//  var ai_debug = false;
 
   if (ai_debug) console.log ('AI COOKIE SET block:', block, 'property:', property, 'value:', value);
 
@@ -5368,12 +5285,6 @@ if (typeof ai_filter != 'undefined') {
     }
   }
 
-//jQuery (function ($) {
-// ***
-//  function ai_random_parameter () {
-//    var current_time = new Date ().getTime ();
-//    return '&ver=' + current_time + '-' + Math.round (Math.random () * 100000);
-//  }
   function ai_random_parameter () {
     var current_time = new Date ().getTime ();
     return current_time + '-' + Math.round (Math.random () * 100000);
@@ -5384,8 +5295,6 @@ if (typeof ai_filter != 'undefined') {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //    var ai_debug = false;
 
-//    ai_filter_hook_blocks.removeClass ('ai-filter-check');
-    // ***
     ai_filter_hook_blocks.forEach ((el, i) => {
       el.classList.remove ('ai-filter-check');
     });
@@ -5407,19 +5316,11 @@ if (typeof ai_filter != 'undefined') {
         return;
     }
 
-//    if (filter_hook_data_array != null) ai_filter_hook_blocks.each (function () {
-    // ***
     if (filter_hook_data_array != null) ai_filter_hook_blocks.forEach ((el, index) => {
 
-//      var block_wrapping_div = $(this).closest ('div.AI_FUNCT_GET_BLOCK_CLASS_NAME');
-      // ***
       var block_wrapping_div = el.closest ('div.' + ai_block_class_def);
-//      var block = parseInt ($(this).data ('block'));
-      // ***
       var block = parseInt (el.dataset.block);
 
-//      if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block_wrapping_div.attr ('class'));
-      // ***
       if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
 
       enable_block = false;
@@ -5436,8 +5337,6 @@ if (typeof ai_filter != 'undefined') {
 
       if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block, enable_block ? 'ENABLED' : 'DISABLED');
 
-//      $(this).css ({"visibility": "", "position": "", "width": "", "height": "", "z-index": ""});
-      // ***
       el.style.visibility = '';
       el.style.position = 'none';
       el.style.width = '';
@@ -5458,18 +5357,12 @@ if (typeof ai_filter != 'undefined') {
       else comments = ai_filter_hook_comments;
 
       if (typeof ai_front != 'undefined') {
-  //      var debug_bar = $(this).prev ('.ai-debug-bar');
-        // ***
         var debug_bar = prev (el, '.ai-debug-bar');
         if (debug_bar != null) {
-    //      debug_bar.find ('.ai-status').text (enable_block ? ai_front.visible : ai_front.hidden);
-          // ***
           debug_bar.querySelectorAll ('.ai-status').forEach ((element, index) => {
             element.textContent = enable_block ? ai_front.visible : ai_front.hidden;
           });
 
-    //      debug_bar.find ('.ai-filter-data').attr ('title', comments);
-          // ***
           debug_bar.querySelectorAll ('.ai-filter-data').forEach ((element, index) => {
             element.setAttribute ('title', comments);
           });
@@ -5477,145 +5370,99 @@ if (typeof ai_filter != 'undefined') {
       }
 
       if (!enable_block) {
-//        $(this).hide (); // .ai-filter-check
-        // ***
         el.style.display = 'none'; // .ai-filter-check
 
-//        if (!block_wrapping_div.find ('.ai-debug-block').length) {
-        // ***
         if (block_wrapping_div != null) {
           if (!block_wrapping_div.querySelector ('.ai-debug-block') != null) {
-  //          block_wrapping_div.hide ();
-            // ***
             block_wrapping_div.style.display = 'none'; // .ai-filter-check
           }
 
-  //        block_wrapping_div.removeAttr ('data-ai');
-          // ***
           block_wrapping_div.removeAttribute ('data-ai');
 
-  //        if (block_wrapping_div.find ('.ai-debug-block')) {
-          // ***
           if (block_wrapping_div.querySelector('.ai-debug-block') != null) {
-  //          block_wrapping_div.css ({"visibility": ""}).removeClass ('ai-close');
-            // ***
             block_wrapping_div.style.visibility = '';
             block_wrapping_div.classList.remove ('ai-close');
 
-  //          if (block_wrapping_div.hasClass ('ai-remove-position')) {
-            // ***
             if (block_wrapping_div.classList.contains ('ai-remove-position')) {
-  //            block_wrapping_div.css ({"position": ""});
               block_wrapping_div.style.position = '';
             }
 
             // In case client-side insert is used and lists will not be processed
-  //          if (typeof $(this).data ('code') != 'undefined') {
-            // ***
             if ('code' in el.dataset) {
               // Remove ai-list-block to show debug info
-  //            block_wrapping_div.removeClass ('ai-list-block');
-  //            block_wrapping_div.removeClass ('ai-list-block-ip');
-              // ***
               block_wrapping_div.classList.remove ('ai-list-block');
               block_wrapping_div.classList.remove ('ai-list-block-ip');
 
               // Remove also 'NOT LOADED' bar if it is there
-  //            if (block_wrapping_div.prev ().hasClass ('ai-debug-info')) {
-              // ***
               if (prev (block_wrapping_div) != null && prev (block_wrapping_div).classList.contains ('ai-debug-info')) {
-  //              block_wrapping_div.prev ().remove ();
-                // ***
                 prev (block_wrapping_div).remove ();
               }
             }
 
-  //        } else block_wrapping_div.hide ();
-          // ***
           } else block_wrapping_div.style.display = 'none';;
         }
       } else {
-//          block_wrapping_div.css ({"visibility": ""});
-          // ***
           if (block_wrapping_div != null) {
             block_wrapping_div.style.visibility = '';
 
-  //          if (block_wrapping_div.hasClass ('ai-remove-position')) {
-            // ***
             if (block_wrapping_div.classList.contains ('ai-remove-position')) {
-  //            block_wrapping_div.css ({"position": ""});
-              // ***
               block_wrapping_div.style.position = '';
             }
           }
-//          if (typeof $(this).data ('code') != 'undefined') {
-          // ***
           if ('code' in el.dataset) {
-//            var block_code = b64d ($(this).data ('code'));
-            var block_code = b64d (el.dataset.code);
 
-            var template = document.createElement ('div');
-            template.innerHTML = block_code;
-
-            var range = document.createRange ();
-
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (template.innerHTML);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI INSERT', 'range.createContextualFragment ERROR:', err.message);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+              } else insert_code = false;
             }
 
-//            if ($(this).closest ('head').length != 0) {
-            // ***
-            if (el.closest ('head') != null) {
-//              $(this).after (block_code);
-              // ***
-              el.insertBefore (fragment, null);
+            if (insert_code) {
+              var block_code = b64d (el.dataset.code);
 
-//              if (!ai_debug) $(this).remove ();
-              // ***
-              if (!ai_debug) el.remove ();
-//            } else $(this).append (block_code);
-            // ***
-            } else el.parentNode.insertBefore (fragment, el.nextSibling);
+              var template = document.createElement ('div');
+              template.innerHTML = block_code;
 
-//                if (!ai_debug)
-//            $(this).attr ('data-code', '');
-            // ***
-            el.setAttribute ('data-code', '');
+              var range = document.createRange ();
 
-//            if (ai_debug) console.log ('AI INSERT CODE', $(block_wrapping_div).attr ('class'));
-            // ***
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
-            if (ai_debug) console.log ('');
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (template.innerHTML);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI INSERT', 'range.createContextualFragment ERROR:', err.message);
+              }
 
-//            ai_process_element (this);
-            // ***
-//            ai_process_element (el);
-            ai_process_element (el.parentElement);
+              if (el.closest ('head') != null) {
+                el.insertBefore (fragment, null);
+
+                if (!ai_debug) el.remove ();
+              } else el.parentNode.insertBefore (fragment, el.nextSibling);
+
+              el.setAttribute ('data-code', '');
+
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
+              if (ai_debug) console.log ('');
+
+              ai_process_element (el.parentElement);
+            } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
           }
         }
 
-//      block_wrapping_div.removeClass ('ai-list-block-filter');
       if (block_wrapping_div != null) {
         block_wrapping_div.classList.remove ('ai-list-block-filter');
       }
     });
   }
 
-//  ai_process_filter_hooks = function (ai_filter_hook_blocks) {
-  // ***
   ai_process_filter_hooks = function (element) {
 
     var ai_debug = typeof ai_debugging !== 'undefined'; // 2
 //    var ai_debug = false;
 
     if (element == null) {
-//      ai_filter_hook_blocks = $("div.ai-filter-check, meta.ai-filter-check");
-      // ***
       ai_filter_hook_blocks = document.querySelectorAll ("div.ai-filter-check, meta.ai-filter-check");
     } else {
         // Temp fix for jQuery elements
@@ -5625,8 +5472,6 @@ if (typeof ai_filter != 'undefined') {
           ai_filter_hook_blocks = Array.prototype.slice.call (element);
         }
 
-        // ***
-//        ai_filter_hook_blocks = ai_filter_hook_blocks.filter ('.ai-filter-check');
         var filtered_elements = [];
         ai_filter_hook_blocks.forEach ((element, i) => {
           if (element.matches ('.ai-filter-check')) {
@@ -5642,6 +5487,16 @@ if (typeof ai_filter != 'undefined') {
         });
         ai_filter_hook_blocks = filtered_elements;
       }
+
+    if (typeof ai_code_hashes !== 'undefined') {
+      filtered_elements = [];
+      ai_filter_hook_blocks.forEach ((element, i) => {
+        if (element.hasAttribute ('data-code-hash')) {
+          if (ai_code_hashes.includes (element.dataset.codeHash)) filtered_elements.push (element);
+        }
+      });
+      ai_filter_hook_blocks = filtered_elements;
+    }
 
     if (!ai_filter_hook_blocks.length) return;
 
@@ -5667,9 +5522,6 @@ if (typeof ai_filter != 'undefined') {
 
     ai_filter_hook_data_requested = true;
 
-//    var page = site_url+"/wp-admin/admin-ajax.php?action=ai_ajax&filter-hook-data=all&ai_check=" + ai_data_id + '&http_user_agent=' + encodeURIComponent (user_agent) + '&http_accept_language=' + encodeURIComponent (language) + ai_random_parameter ();
-//    $.get (page, function (filter_hook_data) {
-    // ***
     var url_data = {
       action: "ai_ajax",
       'filter-hook-data': 'all',
@@ -5692,10 +5544,6 @@ if (typeof ai_filter != 'undefined') {
         method: 'GET',
       });
 
-//      if (!response.ok) {
-////        throw new Error(`HTTP error! status: ${response.status}`);
-//        if (ai_debug) console.log ("Ajax call failed, Status: " + response.status + ", Error: " + response.statusText);
-//      }
 
       const text = await response.text ();
 
@@ -5732,21 +5580,14 @@ if (typeof ai_filter != 'undefined') {
       if (ai_debug) console.log ("AI FILTER HOOK RETURNED COMMENTS:", filter_hook_data_test ['comments']);
 
       // Check blocks again - some blocks might get inserted after the filte hook data was requested
-//      ai_filter_hook_blocks = $("div.ai-filter-check, meta.ai-filter-check");
       ai_filter_hook_blocks = document.querySelectorAll ("div.ai-filter-check, meta.ai-filter-check");
 
       if (ai_debug) console.log ("AI FILTER HOOK BLOCKS:", ai_filter_hook_blocks.length);
 
       process_filter_hook_data (ai_filter_hook_blocks);
-//    }).fail (function(jqXHR, status, err) {
-    // ***
     }).catch ((error) => {
-//      if (ai_debug) console.log ("Ajax call failed, Status: " + status + ", Error: " + err);
-      // ***
       if (ai_debug) console.error ("AI FILTER ERROR:", error);
-//      $("div.ai-filter-check").each (function () {
       document.querySelectorAll ('div.ai-filter-check').forEach ((el, index) => {
-//        $(this).css ({"display": "none", "visibility": "", "position": "", "width": "", "height": "", "z-index": ""}).removeClass ('ai-filter-check').hide ();
         el.style.display = 'none';
         el.style.visibility = '';
         el.style.position = '';
@@ -5761,10 +5602,6 @@ if (typeof ai_filter != 'undefined') {
   }
 
 
-//  $(document).ready (function($) {
-//    setTimeout (function () {ai_process_filter_hooks ()}, 3);
-//  });
-// ***
 function ai_ready (fn) {
   if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
     fn ();
@@ -5779,9 +5616,6 @@ function ai_check_filter_hooks () {
 
 ai_ready (ai_check_filter_hooks);
 
-//});
-// ***
-
 function ai_process_element (element) {
   setTimeout (function() {
     if (typeof ai_process_rotations_in_element == 'function') {
@@ -5789,20 +5623,14 @@ function ai_process_element (element) {
     }
 
     if (typeof ai_process_lists == 'function') {
-      // ***
-//      ai_process_lists (jQuery (".ai-list-data", element));
       ai_process_lists ();
     }
 
     if (typeof ai_process_ip_addresses == 'function') {
-      // ***
-//      ai_process_ip_addresses (jQuery (".ai-ip-data", element));
       ai_process_ip_addresses ();
     }
 
     if (typeof ai_process_filter_hooks == 'function') {
-//      ai_process_filter_hooks (jQuery (".ai-filter-check", element));
-      // ***
       ai_process_filter_hooks (element);
     }
 
@@ -6088,32 +5916,41 @@ if (typeof ai_ip != 'undefined') {
 
           if (el.hasAttribute ('data-code')) {
 
-            var block_code = b64d (el.dataset.code);
-
-            var range = document.createRange ();
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (block_code);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI IP', 'range.createContextualFragment ERROR:', err);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+              } else insert_code = false;
             }
 
-            if (fragment_ok) {
-              if (el.closest ('head') != null) {
-                el.parentNode.insertBefore (fragment, el.nextSibling);
+            if (insert_code) {
+              var block_code = b64d (el.dataset.code);
 
-                if (!ai_debug) el.remove ();
-              } else el.append (fragment);
-            }
+              var range = document.createRange ();
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (block_code);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI IP', 'range.createContextualFragment ERROR:', err);
+              }
 
-            el.removeAttribute ('data-code');
+              if (fragment_ok) {
+                if (el.closest ('head') != null) {
+                  el.parentNode.insertBefore (fragment, el.nextSibling);
 
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
-            if (ai_debug) console.log ('');
+                  if (!ai_debug) el.remove ();
+                } else el.append (fragment);
+              }
 
-            ai_process_element (el);
+              el.removeAttribute ('data-code');
+
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+              if (ai_debug) console.log ('');
+
+              ai_process_element (el);
+            } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
           }
         }
 
@@ -6398,10 +6235,10 @@ function nextAll (element, selector) {
     if ((document.querySelector ('#ai-iab-tcf-bar') != null || document.querySelector ('.ai-list-manual') != null) && typeof __tcfapi == 'function' && typeof ai_load_blocks == 'function' && typeof ai_iab_tcf_callback_installed == 'undefined') {
 
       function ai_iab_tcf_callback (tcData, success) {
-        if (ai_debug) console.log ("AI LISTS ai_iab_tcf_callback", success, tcData);
+        if (ai_debug) console.log ("AI LISTS ai_iab_tcf_callback", success, tcData.eventStatus, tcData.cmpStatus, tcData);
 
         if (success) {
-          if (tcData.eventStatus === 'useractioncomplete') {
+          if (tcData.eventStatus === 'useractioncomplete' || tcData.cmpStatus === 'loaded') {
             ai_tcData = tcData;
 
             if (ai_debug) console.log ("AI LISTS ai_load_blocks ()");
@@ -6520,6 +6357,13 @@ function nextAll (element, selector) {
         }
 
         __tcfapi ('getTCData', 2, function (tcData, success) {
+
+          // We already have the data
+          if (!success && typeof ai_tcData == 'object') {
+            tcData = ai_tcData;
+            success = true;
+          }
+
           if (success) {
             if (iab_tcf_bar != null) {
               iab_tcf_bar.classList.remove ('status-error');
@@ -6575,6 +6419,7 @@ function nextAll (element, selector) {
               }
             }
         });
+
       }
     }
 
@@ -6652,6 +6497,16 @@ function nextAll (element, selector) {
 
     var ai_debug = typeof ai_debugging !== 'undefined'; // 5
 //    var ai_debug = false;
+
+    if (typeof ai_code_hashes !== 'undefined') {
+      filtered_elements = [];
+      ai_list_blocks.forEach ((element, i) => {
+        if (element.hasAttribute ('data-code-hash')) {
+          if (ai_code_hashes.includes (element.dataset.codeHash)) filtered_elements.push (element);
+        }
+      });
+      ai_list_blocks = filtered_elements;
+    }
 
     if (!ai_list_blocks.length) return;
 
@@ -7018,6 +6873,9 @@ function nextAll (element, selector) {
                 var euconsent_v2        = (list_cookie.indexOf ('tcf-v2') == 0 || list_cookie.indexOf ('euconsent-v2') == 0);
                 var euconsent_v2_check  = euconsent_v2 && (structured_data || ai_tcfapi);
 
+
+//            if (ai_debug) console.log ("AI LISTS COOKIE euconsent_v2_check", euconsent_v2, euconsent_v2_check);
+
                 if (list_cookie.indexOf ('=') != - 1) {
                   var list_parameter_data = list_cookie.split ("=");
                   cookie_name  = list_parameter_data [0];
@@ -7029,6 +6887,17 @@ function nextAll (element, selector) {
                 }
 
                 if (euconsent_v2_check) {
+
+
+//                  setTimeout (function () {
+//                    var iab_tcf_status = document.querySelector ('#ai-iab-tcf-status');
+//                    var iab_tcf_bar = document.querySelector ('#ai-iab-tcf-bar');
+//                    if (iab_tcf_bar != null) {
+//                      iab_tcf_bar.style.display = 'block';
+//                    }
+//                  }, 200);
+
+
                   // IAB Europe Transparency and Consent Framework (TCF v2)
                   if (ai_debug) console.log ("AI LISTS COOKIE tcf-v2");
 
@@ -7037,6 +6906,9 @@ function nextAll (element, selector) {
                   if (iab_tcf_bar != null) {
                     iab_tcf_bar.style.display = 'block';
                   }
+
+//            if (ai_debug) console.log ("AI LISTS COOKIE iab_tcf_bar", iab_tcf_bar, iab_tcf_status);
+
 
                   if (ai_tcfapi && typeof ai_tcfapi_found == 'boolean') {
                     if (ai_debug) console.log ("");
@@ -7117,6 +6989,7 @@ function nextAll (element, selector) {
                         }
                       }
                     }
+
                 } else
 
                 if (structured_data) {
@@ -7421,26 +7294,37 @@ function nextAll (element, selector) {
           }
 
           if (el.hasAttribute ('data-fallback-code')) {
-            var block_code = b64d (el.dataset.fallbackCode);
 
-            var range = document.createRange ();
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (block_code);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI LIST', 'range.createContextualFragment ERROR:', err);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-fallback-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.fallbackCodeHash);
+              } else insert_code = false;
             }
 
-            if (fragment_ok) {
-              el.append (fragment);
-            }
+            if (insert_code) {
+              var block_code = b64d (el.dataset.fallbackCode);
 
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
-            if (ai_debug) console.log ('');
+              var range = document.createRange ();
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (block_code);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI LIST', 'range.createContextualFragment ERROR:', err);
+              }
 
-            ai_process_element_lists (el);
+              if (fragment_ok) {
+                el.append (fragment);
+              }
+
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+              if (ai_debug) console.log ('');
+
+              ai_process_element_lists (el);
+            } else if (ai_debug) console.log ('AI SCHEDULING INSERT CODE HASH CHECK FAILED');
+
           }  else {
                el.style.display = 'none'; // .ai-list-data
 
@@ -7490,35 +7374,45 @@ function nextAll (element, selector) {
 
           if (el.hasAttribute ('data-code')) {
 
-            var block_code = b64d (el.dataset.code);
-
-            var range = document.createRange ();
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (block_code);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI LISTS', 'range.createContextualFragment ERROR:', err);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+              } else insert_code = false;
             }
 
-//            if ($(this).closest ('head').length != 0) {
-//              $(this).after (block_code);
-//              if (!ai_debug) $(this).remove ();
-//            } else $(this).append (block_code);
+            if (insert_code) {
+              var block_code = b64d (el.dataset.code);
 
-            if (fragment_ok) {
-              if (el.closest ('head') != null) {
-                el.parentNode.insertBefore (fragment, el.nextSibling);
-                if (!ai_debug) el.remove ();
-              } else el.append (fragment);
-            }
+              var range = document.createRange ();
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (block_code);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI LISTS', 'range.createContextualFragment ERROR:', err);
+              }
 
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+  //            if ($(this).closest ('head').length != 0) {
+  //              $(this).after (block_code);
+  //              if (!ai_debug) $(this).remove ();
+  //            } else $(this).append (block_code);
 
-            if (ai_debug) console.log ('');
+              if (fragment_ok) {
+                if (el.closest ('head') != null) {
+                  el.parentNode.insertBefore (fragment, el.nextSibling);
+                  if (!ai_debug) el.remove ();
+                } else el.append (fragment);
+              }
 
-            ai_process_element_lists (el);
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : '');
+
+              if (ai_debug) console.log ('');
+
+              ai_process_element_lists (el);
+            } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
+
           }
         }
 
@@ -7787,96 +7681,100 @@ if (typeof ai_recaptcha_site_key != 'undefined') {
 const alLoad = function (element, env) {
 
   if (element.tagName === "DIV") {
-    // ***
-//    if (typeof element.dataset.code != 'undefined') {
     if (element.hasAttribute ('data-code')) {
+
+      var insert_code = true;
+      if (typeof ai_code_hashes !== 'undefined') {
+        if (element.hasAttribute ('data-code-hash')) {
+          insert_code = ai_code_hashes.includes (element.dataset.codeHash);
+        } else insert_code = false;
+      }
+
       var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //      var ai_debug = false;
 
-      // Using jQuery to properly load AdSense
-      // ***
-//      jQuery (element).prepend (b64d (element.dataset.code));
+      if (insert_code) {
 
-      var range = document.createRange ();
-      var fragment_ok = true;
-      try {
-        var fragment = range.createContextualFragment (b64d (element.dataset.code));
-      }
-      catch (err) {
-        var fragment_ok = false;
-        if (ai_debug) console.log ('AI LOADING ', 'range.createContextualFragment ERROR:', err);
-      }
-
-      if (fragment_ok) {
-        element.insertBefore (fragment, element.firstChild);
-      }
-
-
-      element.removeAttribute ("data-code");
-
-      var classes = '';
-      var wrapper = element.closest ('.' + b64d (element.dataset.class));
-
-      if (ai_debug) {
-        console.log ('');
-
-        if (wrapper != null) {
-          classes = wrapper.className;
+        var range = document.createRange ();
+        var fragment_ok = true;
+        try {
+          var fragment = range.createContextualFragment (b64d (element.dataset.code));
         }
-        if (element.getAttribute ("class").includes ('ai-wait-for-interaction')) {
-          console.log ('AI LOADING ON INTERACTION', classes);
-        } else
-        if (element.getAttribute ("class").includes ('ai-check-recaptcha-score')) {
-          console.log ('AI LOADING ON RECAPTCHA SCORE', classes);
-        } else
-        if (element.getAttribute ("class").includes ('ai-delayed')) {
-          console.log ('AI DELAYED LOADING', classes);
+        catch (err) {
+          var fragment_ok = false;
+          if (ai_debug) console.log ('AI LOADING ', 'range.createContextualFragment ERROR:', err);
         }
-        else console.log ('AI LAZY LOADING', classes);
-      }
 
-      element.removeAttribute("data-class");
-      element.removeAttribute("class");
+        if (fragment_ok) {
+          element.insertBefore (fragment, element.firstChild);
+        }
 
-      if (typeof ai_process_lists == 'function') {
-        // ***
-//        ai_process_lists        (jQuery(".ai-list-data", element)); // Doesn't process rotations
-        ai_process_lists (); // Doesn't process rotations
-      }
-      if (typeof ai_process_ip_addresses == 'function') {
-        // ***
-//        ai_process_ip_addresses (jQuery(".ai-ip-data",   element));
-        ai_process_ip_addresses ();
-      }
-      if (typeof ai_process_filter_hooks == 'function') {
-        // ***
-//        ai_process_filter_hooks (jQuery (".ai-filter-check", element));
-        ai_process_filter_hooks ();
-      }
-      if (typeof ai_process_rotations_in_element == 'function') {
-        ai_process_rotations_in_element (element);
-      }
-      if (typeof ai_adb_process_blocks == 'function') {
-        // ***
-//        ai_adb_process_blocks (jQuery (element));
-        ai_adb_process_blocks ();
-      }
-//      console.log (typeof ai_process_impressions == 'function', wrapper != null, ai_tracking_finished == true);
-      if (typeof ai_process_impressions == 'function' && wrapper != null && ai_tracking_finished == true) {
-//        ai_process_impressions ();
-        setTimeout (ai_process_impressions, 1400);
-      }
-      if (typeof ai_install_click_trackers == 'function' && wrapper != null && ai_tracking_finished == true) {
-//        ai_install_click_trackers ();
-        setTimeout (ai_install_click_trackers, 1500);
-      }
-      if (typeof ai_install_close_buttons == 'function' && wrapper != null) {
-        ai_install_close_buttons (wrapper);
-      }
+        element.removeAttribute ("data-code");
 
-      ai_process_wait_for_interaction ();
+        var classes = '';
+        var wrapper = element.closest ('.' + b64d (element.dataset.class));
 
-      ai_process_delayed_blocks ();
+        if (ai_debug) {
+          console.log ('');
+
+          if (wrapper != null) {
+            classes = wrapper.className;
+          }
+          if (element.getAttribute ("class").includes ('ai-wait-for-interaction')) {
+            console.log ('AI LOADING ON INTERACTION', classes);
+          } else
+          if (element.getAttribute ("class").includes ('ai-check-recaptcha-score')) {
+            console.log ('AI LOADING ON RECAPTCHA SCORE', classes);
+          } else
+          if (element.getAttribute ("class").includes ('ai-delayed')) {
+            console.log ('AI DELAYED LOADING', classes);
+          }
+          else console.log ('AI LAZY LOADING', classes);
+        }
+
+        element.removeAttribute("data-class");
+        element.removeAttribute("class");
+
+        if (typeof ai_process_lists == 'function') {
+          // ***
+  //        ai_process_lists        (jQuery(".ai-list-data", element)); // Doesn't process rotations
+          ai_process_lists (); // Doesn't process rotations
+        }
+        if (typeof ai_process_ip_addresses == 'function') {
+          // ***
+  //        ai_process_ip_addresses (jQuery(".ai-ip-data",   element));
+          ai_process_ip_addresses ();
+        }
+        if (typeof ai_process_filter_hooks == 'function') {
+          // ***
+  //        ai_process_filter_hooks (jQuery (".ai-filter-check", element));
+          ai_process_filter_hooks ();
+        }
+        if (typeof ai_process_rotations_in_element == 'function') {
+          ai_process_rotations_in_element (element);
+        }
+        if (typeof ai_adb_process_blocks == 'function') {
+          // ***
+  //        ai_adb_process_blocks (jQuery (element));
+          ai_adb_process_blocks ();
+        }
+  //      console.log (typeof ai_process_impressions == 'function', wrapper != null, ai_tracking_finished == true);
+        if (typeof ai_process_impressions == 'function' && wrapper != null && ai_tracking_finished == true) {
+  //        ai_process_impressions ();
+          setTimeout (ai_process_impressions, 1400);
+        }
+        if (typeof ai_install_click_trackers == 'function' && wrapper != null && ai_tracking_finished == true) {
+  //        ai_install_click_trackers ();
+          setTimeout (ai_install_click_trackers, 1500);
+        }
+        if (typeof ai_install_close_buttons == 'function' && wrapper != null) {
+          ai_install_close_buttons (wrapper);
+        }
+
+        ai_process_wait_for_interaction ();
+
+        ai_process_delayed_blocks ();
+      } else if (ai_debug) console.log ('AI LOADING CODE HASH CHECK FAILED');
     }
   }
 };
@@ -8340,10 +8238,6 @@ setTimeout (ai_process_delayed_blocks, 1);
 
 if (typeof ai_rotation_triggers != 'undefined') {
 
-// ***
-//jQuery (function ($) {
-
-
   ai_process_rotation = function (rotation_block) {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //    var ai_debug = false;
@@ -8358,13 +8252,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
         rotation_block = Array.prototype.slice.call (rotation_block);
       } else rotation_block = rotation_block [0];
     }
-
-
-//    if (ai_debug) console.log ('#', rotation_block.classList.contains ('ai-unprocessed'));
-
-    // ***
-//    if (!$(rotation_block).hasClass ('ai-unprocessed') && !$(rotation_block).hasClass ('ai-timer')) return;
-//    $(rotation_block).removeClass ('ai-unprocessed').removeClass ('ai-timer');
 
     if (multiple_elements) {
       var class_found = false;
@@ -8389,8 +8276,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
     if (ai_debug) console.log ('');
 
     var ai_rotation_triggers_found = false;
-    // ***
-//    if (typeof $(rotation_block).data ('info') != 'undefined') {
     if (multiple_elements) {
       var info_found = rotation_block [0].hasAttribute ('data-info');
     } else {
@@ -8398,8 +8283,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
       }
 
     if (info_found) {
-      // ***
-//      var block_info = JSON.parse (atob ($(rotation_block).data ('info')));
       if (multiple_elements) {
         var block_info = JSON.parse (atob (rotation_block [0].dataset.info));
       } else {
@@ -8417,7 +8300,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
       }
     }
 
-//    if (typeof rotation_block.length == 'number') {
     if (multiple_elements) {
       if (ai_debug) console.log ('AI ROTATE process rotation:', rotation_block.length, 'rotation blocks');
       for (var index = 0; index < rotation_block.length; index ++) {
@@ -8438,8 +8320,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 2
 //    var ai_debug = false;
 
-    // ***
-//    var rotate_options = $(rotation_block).children (".ai-rotate-option");
     var rotate_options = [];
 
     Array.from (rotation_block.children).forEach ((element, i) => {
@@ -8458,45 +8338,23 @@ if (typeof ai_rotation_triggers != 'undefined') {
         console.log ('AI ROTATE block', (block_wrapping_div.hasAttribute ("class") ? block_wrapping_div.getAttribute ('class') : ''));
       }
 
-      // ***
-//      console.log ('AI ROTATE', 'block', $(rotation_block).attr ('class') + ',', rotate_options.length, 'options');
       console.log ('AI ROTATE wrapper', (rotation_block.hasAttribute ("class") ? rotation_block.getAttribute ('class') : '') + ',', rotate_options.length, 'options');
     }
 
-    // ***
-//    rotate_options.hide ();
     rotate_options.forEach ((element, i) => {
       element.style.display = 'none';
     });
 
-//    rotate_options.css ({"visibility": "hidden"});
-
-//    rotate_options.animate ({
-//        opacity: 0,
-//      }, 500, function() {
-//    });
-
-    // **
-//    if (typeof $(rotation_block).data ('next') == 'undefined') {
-//      if (typeof $(rotate_options [0]).data ('group') != 'undefined') {
     if (!rotation_block.hasAttribute ('data-next')) {
       if (rotate_options [0].hasAttribute ('data-group')) {
         var random_index = - 1;
-        // ***
-//        var all_ai_groups = $('span[data-ai-groups]');
         var all_ai_groups = document.querySelectorAll ('span[data-ai-groups]');
         var ai_groups = [];
 
-        // ***
-//        all_ai_groups.each (function (index) {
         all_ai_groups.forEach ((el, index) => {
-          // ***
-//          var visible = !!($(this)[0].offsetWidth || $(this)[0].offsetHeight || $(this)[0].getClientRects().length);
           var visible = !!(el.offsetWidth || el.offsetHeight || el.getClientRects ().length);
 
           if (visible) {
-            // ***
-//            ai_groups.push (this);
             ai_groups.push (el);
           }
         });
@@ -8504,12 +8362,9 @@ if (typeof ai_rotation_triggers != 'undefined') {
         if (ai_debug) console.log ('AI ROTATE GROUPS:', ai_groups.length, 'group markers found');
 
         if (ai_groups.length >= 1) {
-//          var groups = JSON.parse (b64d ($(ai_groups).first ().data ('ai-groups')));
           timed_groups = [];
           groups = [];
           ai_groups.forEach (function (group_data, index) {
-            // ***
-//            active_groups = JSON.parse (b64d ($(group_data).data ('ai-groups')));
             active_groups = JSON.parse (b64d (group_data.dataset.aiGroups));
 
             var timed_group = false;
@@ -8532,10 +8387,7 @@ if (typeof ai_rotation_triggers != 'undefined') {
           groups.forEach (function (group, index2) {
 
             if (random_index == - 1)
-//              rotate_options.each (function (index) {
               rotate_options.forEach ((el, index) => {
-                // ***
-//                var option_group = b64d ($(this).data ('group'));
                 var option_group = b64d (el.dataset.group);
                 option_group_items = option_group.split (",");
 
@@ -8556,9 +8408,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
           });
         }
       } else {
-        // ***
-//          var thresholds_data = $(rotation_block).data ('shares');
-//          if (typeof thresholds_data === 'string') {
           if (rotation_block.hasAttribute ('data-shares')) {
             var thresholds_data = rotation_block.dataset.shares;
             var thresholds = JSON.parse (atob (thresholds_data));
@@ -8569,8 +8418,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
               if (random_threshold <= thresholds [index]) break;
             }
           } else {
-              // ***
-//              var unique = $(rotation_block).hasClass ('ai-unique');
               var unique = rotation_block.classList.contains ('ai-unique');
               var d = new Date();
 
@@ -8585,14 +8432,11 @@ if (typeof ai_rotation_triggers != 'undefined') {
                    ai_rotation_seed_block = ai_rotation_seed_block % rotate_options.length;
                  }
 
-                 // ***
-//                 var block_counter = $(rotation_block).data ('counter');
                  var block_counter = parseInt (rotation_block.dataset.counter);
 
                  if (ai_debug) console.log ('AI ROTATE SEED:', ai_rotation_seed_block, ' COUNTER:', block_counter);
 
                  if (block_counter <= rotate_options.length) {
-//                  var random_index = parseInt (ai_rotation_seed_block + block_counter);
                   var random_index = parseInt (ai_rotation_seed_block + block_counter - 1);
                   if (random_index >= rotate_options.length) random_index -= rotate_options.length;
                  } else random_index = rotate_options.length // forced no option selected
@@ -8604,51 +8448,47 @@ if (typeof ai_rotation_triggers != 'undefined') {
             }
         }
     } else {
-        // ***
-//        var random_index = parseInt ($(rotation_block).attr ('data-next'));
         var random_index = parseInt (rotation_block.getAttribute ('data-next'));
 
         if (ai_debug) console.log ('AI TIMED ROTATION next index:', random_index);
 
-        // ***
-//        var option = $(rotate_options [random_index]);
         var option = rotate_options [random_index];
 
-        // ***
-//        if (typeof option.data ('code') != 'undefined') {
         if (option.hasAttribute ('data-code')) {
-          // ***
-//          option = $(b64d (option.data ('code')));
-          var range = document.createRange ();
-          var fragment_ok = true;
-          try {
-            var fragment = range.createContextualFragment (b64d (option.dataset.code));
-          }
-          catch (err) {
-            var fragment_ok = false;
-            if (ai_debug) console.log ('AI ROTATE', 'range.createContextualFragment ERROR:', err);
+
+          var insert_code = true;
+          if (typeof ai_code_hashes !== 'undefined') {
+            if (option.hasAttribute ('data-code-hash')) {
+              insert_code = ai_code_hashes.includes (option.dataset.codeHash);
+            } else insert_code = false;
           }
 
-          // if !fragment_ok option remains div with encoded option code
-          if (fragment_ok) {
-            option = fragment;
-          }
+          if (insert_code) {
+            var range = document.createRange ();
+            var fragment_ok = true;
+            try {
+              var fragment = range.createContextualFragment (b64d (option.dataset.code));
+            }
+            catch (err) {
+              var fragment_ok = false;
+              if (ai_debug) console.log ('AI ROTATE', 'range.createContextualFragment ERROR:', err);
+            }
+
+            // if !fragment_ok option remains div with encoded option code
+            if (fragment_ok) {
+              option = fragment;
+            }
+          } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
         }
 
-        // ***
-//        var group_markers = option.find ('span[data-ai-groups]').addBack ('span[data-ai-groups]');
         var group_markers = option.querySelectorAll ('span[data-ai-groups]');
 
         if (group_markers.length != 0) {
           if (ai_debug) {
-            // ***
-//            var next_groups = JSON.parse (b64d (group_markers.first ().data ('ai-groups')));
             var next_groups = JSON.parse (b64d (group_markers [0].dataset.aiGroups));
             console.log ('AI TIMED ROTATION next option sets groups', next_groups);
           }
 
-          // ***
-//          var group_rotations = $('.ai-rotation-groups');
           var group_rotations = document.querySelectorAll ('.ai-rotation-groups');
           if (group_rotations.length != 0) {
             setTimeout (function() {ai_process_group_rotations ();}, 5);
@@ -8656,20 +8496,11 @@ if (typeof ai_rotation_triggers != 'undefined') {
         }
       }
 
-    // ***
-//    if ($(rotation_block).hasClass ('ai-rotation-scheduling')) {
     if (rotation_block.classList.contains ('ai-rotation-scheduling')) {
       random_index = - 1;
-//      var gmt = $(rotation_block).data ('gmt');
-
-//      if (ai_debug) console.log ('AI SCHEDULED ROTATION, GMT:', gmt / 1000);
 
       for (var option_index = 0; option_index < rotate_options.length; option_index ++) {
-        // ***
-//        var option = $(rotate_options [option_index]);
         var option = rotate_options [option_index];
-//        var option_data = option.data ('scheduling');
-//        if (typeof option_data != 'undefined') {
         if (option.hasAttribute ('data-scheduling')) {
           var option_data = option.dataset.scheduling;
           var scheduling_data = b64d (option_data);
@@ -8771,8 +8602,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
       return;
     }
 
-    // ***
-//    var option = $(rotate_options [random_index]);
     var option = rotate_options [random_index];
     var option_time_text = '';
 
@@ -8783,17 +8612,10 @@ if (typeof ai_rotation_triggers != 'undefined') {
     });
 
 
-    // ***
-//    if (typeof option.data ('time') != 'undefined') {
     if (option.hasAttribute ('data-time')) {
-      // ***
-//      var rotation_time = atob (option.data ('time'));
       var rotation_time = atob (option.dataset.time);
 
       if (ai_debug) {
-        // ***
-//        var option_index = option.data ('index');
-//        var option_name = b64d (option.data ('name'));
         var option_index = parseInt (option.dataset.index);
         var option_name = b64d (option.dataset.name);
         console.log ('AI TIMED ROTATION index:', random_index + ' ['+ option_index + '],', 'name:', '"'+option_name+'",', 'time:', rotation_time);
@@ -8805,15 +8627,9 @@ if (typeof ai_rotation_triggers != 'undefined') {
           next_random_index++;
           if (next_random_index >= rotate_options.length) next_random_index = 0;
 
-          // ***
-//          var next_option = $(rotate_options [next_random_index]);
           var next_option = rotate_options [next_random_index];
-          // ***
-//          if (typeof next_option.data ('time') == 'undefined') {
           if (!next_option.hasAttribute ('data-time')) {
             random_index = next_random_index;
-            // ***
-//            option = $(rotate_options [random_index]);
             option = rotate_options [random_index];
             rotation_time = 0;
 
@@ -8821,8 +8637,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
 
             break;
           }
-          // ***
-//          var next_rotation_time = atob (next_option.data ('time'));
           var next_rotation_time = atob (next_option.dataset.time);
 
           if (ai_debug) console.log ('AI TIMED ROTATION check:', next_random_index, 'time:', next_rotation_time);
@@ -8830,11 +8644,7 @@ if (typeof ai_rotation_triggers != 'undefined') {
 
         if (rotation_time != 0) {
           random_index = next_random_index;
-          // ***
-//          option = $(rotate_options [random_index]);
           option = rotate_options [random_index];
-          // ***
-//          rotation_time = atob (option.data ('time'));
           rotation_time = atob (option.dataset.time);
         }
 
@@ -8845,16 +8655,10 @@ if (typeof ai_rotation_triggers != 'undefined') {
         var next_random_index = random_index + 1;
         if (next_random_index >= rotate_options.length) next_random_index = 0;
 
-        // ***
-//        if (typeof $(rotation_block).data ('info') != 'undefined') {
         if (rotation_block.hasAttribute ('data-info')) {
-          // ***
-//          var block_info = JSON.parse (atob ($(rotation_block).data ('info')));
           var block_info = JSON.parse (atob (rotation_block.dataset.info));
           var rotation_id = block_info [0];
 
-          // ***
-//          $(rotation_block).attr ('data-next', next_random_index);
           rotation_block.setAttribute ('data-next', next_random_index);
           var rotation_selector = "div.ai-rotate.ai-" + rotation_id;
 
@@ -8865,8 +8669,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
           if (trigger_rotation) {
             ai_rotation_triggers.push (rotation_selector);
 
-            // ***
-//            setTimeout (function() {$(rotation_selector).addClass ('ai-timer'); ai_process_rotation ($(rotation_selector));}, rotation_time * 1000);
             setTimeout (function() {
               var next_elements = document.querySelectorAll (rotation_selector);
               next_elements.forEach ((el, index) => {
@@ -8879,13 +8681,8 @@ if (typeof ai_rotation_triggers != 'undefined') {
         }
       }
     }
-    // ***
-//    else if (typeof option.data ('group') != 'undefined') {
     else if (option.hasAttribute ('data-group')) {
       if (ai_debug) {
-        // ***
-//        var option_index = option.data ('index');
-//        var option_name = b64d (option.data ('name'));
         var option_index = parseInt (option.dataset.index);
         var option_name = b64d (option.dataset.name);
         console.log ('AI ROTATE GROUP', '"' + option_name + '",', 'index:', random_index, '[' + option_index + ']');
@@ -8894,8 +8691,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
     else {
       // Remove unused options
       if (!ai_debug) {
-        // ***
-//        rotate_options.each (function (index) {
         rotate_options.forEach ((el, index) => {
           if (index != random_index) el.remove ();
         });
@@ -8905,9 +8700,6 @@ if (typeof ai_rotation_triggers != 'undefined') {
       if (ai_debug) console.log ('AI ROTATE index:', random_index);
     }
 
-
-    // ***
-//    option.css ({"display": "", "visibility": "", "position": "", "width": "", "height": "", "top": "", "left": ""}).removeClass ('ai-rotate-hidden').removeClass ('ai-rotate-hidden-2');
 
     option.style.display = '';
     option.style.visibility = '';
@@ -8919,70 +8711,50 @@ if (typeof ai_rotation_triggers != 'undefined') {
     option.classList.remove ('ai-rotate-hidden');
     option.classList.remove ('ai-rotate-hidden-2');
 
-    // ***
-//    $(rotation_block).css ({"position": ""});
     rotation_block.style.position = '';
 
-//    option.css ({"visibility": "visible"});
-
-//    option.stop ().animate ({
-//        opacity: 1,
-//      }, 500, function() {
-//    });
-
-    // ***
-//    if (typeof option.data ('code') != 'undefined') {
     if (option.hasAttribute ('data-code')) {
-      // ***
-//      rotate_options.empty();
-      rotate_options.forEach ((el, index) => {
-        el.innerText = '';
-      });
 
-      if (ai_debug) console.log ('AI ROTATE CODE');
-
-      // ***
-//      var option_code = b64d (option.data ('code'));
-      var option_code = b64d (option.dataset.code);
-
-      var range = document.createRange ();
-      var fragment_ok = true;
-      try {
-        var fragment = range.createContextualFragment (option_code);
-      }
-      catch (err) {
-        var fragment_ok = false;
-        if (ai_debug) console.log ('AI ROTATE', 'range.createContextualFragment ERROR:', err);
+      var insert_code = true;
+      if (typeof ai_code_hashes !== 'undefined') {
+        if (option.hasAttribute ('data-code-hash')) {
+          insert_code = ai_code_hashes.includes (option.dataset.codeHash);
+        } else insert_code = false;
       }
 
-      // ***
-//      option.append (option_code);
-      option.append (fragment);
+      if (insert_code) {
+        rotate_options.forEach ((el, index) => {
+          el.innerText = '';
+        });
 
-      ai_process_elements ();
+        if (ai_debug) console.log ('AI ROTATE CODE');
+
+        var option_code = b64d (option.dataset.code);
+
+        var range = document.createRange ();
+        var fragment_ok = true;
+        try {
+          var fragment = range.createContextualFragment (option_code);
+        }
+        catch (err) {
+          var fragment_ok = false;
+          if (ai_debug) console.log ('AI ROTATE', 'range.createContextualFragment ERROR:', err);
+        }
+
+        option.append (fragment);
+
+        ai_process_elements ();
+      } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
     }
 
-    // ***
-//    var option_index = option.data ('index');
-//    var option_name = b64d (option.data ('name'));
-//    var debug_block_frame = $(rotation_block).closest ('.ai-debug-block');
     var option_index = parseInt (option.dataset.index);
     var option_name = b64d (option.dataset.name);
     var debug_block_frame = rotation_block.closest ('.ai-debug-block');
-    // ***
-//    if (debug_block_frame.length != 0) {
     if (debug_block_frame != null) {
-      // ***
-//      var name_tag = debug_block_frame.find ('kbd.ai-option-name');
       var name_tag = debug_block_frame.querySelectorAll ('kbd.ai-option-name');
       // Do not set option name in nested debug blocks
-      // ***
-//      var nested_debug_block = debug_block_frame.find ('.ai-debug-block');
-//      if (typeof nested_debug_block != 'undefined') {
       var nested_debug_block = debug_block_frame.querySelectorAll ('.ai-debug-block');
       if (nested_debug_block.length != 0) {
-        // ***
-//        var name_tag2 = nested_debug_block.find ('kbd.ai-option-name');
         var name_tag2 = [];
         nested_debug_block.forEach ((el, index) => {
           var nested_option_names = el.querySelectorAll ('kbd.ai-option-name');
@@ -8995,17 +8767,10 @@ if (typeof ai_rotation_triggers != 'undefined') {
         var name_tag = Array.from (name_tag);
         name_tag = name_tag.slice (0, name_tag.length - name_tag2.length);
       }
-      // ***
-//      if (typeof name_tag != 'undefined') {
       if (name_tag.length != 0) {
-        // ***
-//        var separator = name_tag.first ().data ('separator');
-//        if (typeof separator == 'undefined') separator = '';
         if (name_tag [0].hasAttribute ('data-separator')) {
           separator = name_tag [0].dataset.separator;
         } else separator = '';
-        // ***
-//        name_tag.html (separator + option_name + option_time_text);
         name_tag.forEach ((el, index) => {
           el.innerText = separator + option_name + option_time_text;
         });
@@ -9014,36 +8779,20 @@ if (typeof ai_rotation_triggers != 'undefined') {
     }
 
     var tracking_updated = false;
-    // ****
-//    var adb_show_wrapping_div = $(rotation_block).closest ('.ai-adb-show');
     var adb_show_wrapping_div = rotation_block.closest ('.ai-adb-show');
-    // ***
-//    if (adb_show_wrapping_div.length != 0) {
     if (adb_show_wrapping_div != null) {
-      // ***
-//      if (adb_show_wrapping_div.attr ("data-ai-tracking")) {
       if (adb_show_wrapping_div.hasAttribute ("data-ai-tracking")) {
-        // ***
-//        var data = JSON.parse (b64d (adb_show_wrapping_div.attr ("data-ai-tracking")));
         var data = JSON.parse (b64d (adb_show_wrapping_div.getAttribute ("data-ai-tracking")));
         if (typeof data !== "undefined" && data.constructor === Array) {
-//          data [1] = random_index + 1;
           data [1] = option_index;
           data [3] = option_name ;
 
-          // ***
-//          if (ai_debug) console.log ('AI ROTATE TRACKING DATA ', b64d (adb_show_wrapping_div.attr ("data-ai-tracking")), ' <= ', JSON.stringify (data));
           if (ai_debug) console.log ('AI ROTATE TRACKING DATA ', b64d (adb_show_wrapping_div.getAttribute ("data-ai-tracking")), ' <= ', JSON.stringify (data));
 
-          // ***
-//          adb_show_wrapping_div.attr ("data-ai-tracking", b64e (JSON.stringify (data)))
           adb_show_wrapping_div.setAttribute ("data-ai-tracking", b64e (JSON.stringify (data)))
 
           // Inserted code may need click trackers
-          // ***
-//          adb_show_wrapping_div.addClass ('ai-track');
           adb_show_wrapping_div.classList.add ('ai-track');
-//          if (timed_rotation && ai_tracking_finished) {
             // Prevent pageview tracking for timed rotations but only if ai-impression class has been set - block impression tracked
           if (timed_rotation && ai_tracking_finished && adb_show_wrapping_div.getAttribute ("class").includes ('ai-impression')) {
             // Prevent pageview trackign for timed rotations
@@ -9056,36 +8805,22 @@ if (typeof ai_rotation_triggers != 'undefined') {
     }
 
     if (!tracking_updated) {
-      // ***
-//      var wrapping_div = $(rotation_block).closest ('div[data-ai]');
       var wrapping_div = rotation_block.closest ('div[data-ai]');
-      // ***
-//      if (typeof wrapping_div.attr ("data-ai") != "undefined") {
       if (wrapping_div != null && wrapping_div.hasAttribute ("data-ai")) {
-        // ***
-//        var data = JSON.parse (b64d (wrapping_div.attr ("data-ai")));
         var data = JSON.parse (b64d (wrapping_div.getAttribute ("data-ai")));
         if (typeof data !== "undefined" && data.constructor === Array) {
-//          data [1] = random_index + 1;
           data [1] = option_index;
           data [3] = option_name;
 
-          // ***
-//          wrapping_div.attr ("data-ai", b64e (JSON.stringify (data)))
           wrapping_div.setAttribute ("data-ai", b64e (JSON.stringify (data)))
 
           // Inserted code may need click trackers
-          // ***
-//          wrapping_div.addClass ('ai-track');
           wrapping_div.classList.add ('ai-track');
-//          if (timed_rotation && ai_tracking_finished) {
           if (timed_rotation && ai_tracking_finished && wrapping_div.getAttribute ("class").includes ('ai-impression')) {
             // Prevent pageview tracking for timed rotations but only if ai-impression class has been set - block impression tracked
             wrapping_div.classList.add ('ai-no-pageview');
           }
 
-          // ***
-//          if (ai_debug) console.log ('AI ROTATE TRACKING DATA ', b64d (wrapping_div.attr ("data-ai")));
           if (ai_debug) console.log ('AI ROTATE TRACKING DATA ', b64d (wrapping_div.getAttribute ("data-ai")));
 
         }
@@ -9094,18 +8829,12 @@ if (typeof ai_rotation_triggers != 'undefined') {
   }
 
   ai_process_rotations = function () {
-    // ***
-//    $("div.ai-rotate").each (function (index, element) {
-//      ai_process_rotation (this);
     document.querySelectorAll ("div.ai-rotate").forEach ((el, index) => {
       ai_process_rotation (el);
     });
   }
 
   function ai_process_group_rotations () {
-//    $("div.ai-rotate.ai-rotation-groups").each (function (index, element) {
-//      $(this).addClass ('ai-timer');
-//      ai_process_rotation (this);
     document.querySelectorAll ("div.ai-rotate.ai-rotation-groups").forEach ((el, index) => {
       el.classList.add ('ai-timer');
       ai_process_rotation (el);
@@ -9113,19 +8842,12 @@ if (typeof ai_rotation_triggers != 'undefined') {
   }
 
   ai_process_rotations_in_element = function (el) {
-//    $("div.ai-rotate", el).each (function (index, element) {
-//      ai_process_rotation (this);
     if (el != null) {
       el.querySelectorAll ("div.ai-rotate").forEach ((element, index) => {
         ai_process_rotation (element);
       });
     }
   }
-
-  // ***
-//  $(document).ready (function($) {
-//    setTimeout (function() {ai_process_rotations ();}, 10);
-//  });
 
 function ai_delay_and_process_rotations () {
   setTimeout (function() {ai_process_rotations ();}, 10);
@@ -9141,8 +8863,6 @@ function ai_ready (fn) {
 
 ai_ready (ai_delay_and_process_rotations);
 
-//});
-
 ai_process_elements_active = false;
 
 function ai_process_elements () {
@@ -9155,28 +8875,20 @@ function ai_process_elements () {
       }
 
       if (typeof ai_process_lists == 'function') {
-//        ai_process_lists (jQuery (".ai-list-data"));
         ai_process_lists ();
       }
 
       if (typeof ai_process_ip_addresses == 'function') {
-//        ai_process_ip_addresses (jQuery (".ai-ip-data"));
         ai_process_ip_addresses ();
       }
 
       if (typeof ai_process_filter_hooks == 'function') {
-//        ai_process_filter_hooks (jQuery (".ai-filter-check"));
         ai_process_filter_hooks ();
       }
 
       if (typeof ai_adb_process_blocks == 'function') {
         ai_adb_process_blocks ();
       }
-
-      //?? duplicate down
-//      if (typeof ai_install_click_trackers == 'function' && ai_tracking_finished == true) {
-//        ai_install_click_trackers ();
-//      }
 
       if (typeof ai_process_impressions == 'function' && ai_tracking_finished == true) {
         ai_process_impressions ();

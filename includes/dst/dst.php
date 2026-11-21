@@ -4,7 +4,7 @@
  * DST - WP theme and plugin usage tracking client
  * Experimental
  *
- * @version 1.0.8
+ * @version 1.0.10
  * @author Igor Funa <igor.funa/gmail.com>
  * @license MIT
  */
@@ -12,6 +12,9 @@
 /*
 
 Change Log
+
+DST 1.0.10 - 2026-11-21
+- Fix for cases where get_transient returns array
 
 DST 1.0.9 - 2025-02-12
 - Fix for reflected cross-site scripting (XSS)
@@ -312,7 +315,7 @@ class DST_Client {
 
     $this->check_schedule ();
 
-    if ($upgrade_time = get_transient (self::DST_TRANSIENT_UPGRADED . $this->slug)) {
+    if ($upgrade_time = (int) get_transient (self::DST_TRANSIENT_UPGRADED . $this->slug)) {
       $this->log_event ('UPGRADED ' .(time () - $upgrade_time) . ' s ago');
 
       delete_transient (self::DST_TRANSIENT_UPGRADED . $this->slug);

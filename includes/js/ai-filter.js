@@ -12,12 +12,6 @@ if (typeof ai_filter != 'undefined') {
     }
   }
 
-//jQuery (function ($) {
-// ***
-//  function ai_random_parameter () {
-//    var current_time = new Date ().getTime ();
-//    return '&ver=' + current_time + '-' + Math.round (Math.random () * 100000);
-//  }
   function ai_random_parameter () {
     var current_time = new Date ().getTime ();
     return current_time + '-' + Math.round (Math.random () * 100000);
@@ -28,8 +22,6 @@ if (typeof ai_filter != 'undefined') {
     var ai_debug = typeof ai_debugging !== 'undefined'; // 1
 //    var ai_debug = false;
 
-//    ai_filter_hook_blocks.removeClass ('ai-filter-check');
-    // ***
     ai_filter_hook_blocks.forEach ((el, i) => {
       el.classList.remove ('ai-filter-check');
     });
@@ -51,19 +43,11 @@ if (typeof ai_filter != 'undefined') {
         return;
     }
 
-//    if (filter_hook_data_array != null) ai_filter_hook_blocks.each (function () {
-    // ***
     if (filter_hook_data_array != null) ai_filter_hook_blocks.forEach ((el, index) => {
 
-//      var block_wrapping_div = $(this).closest ('div.AI_FUNCT_GET_BLOCK_CLASS_NAME');
-      // ***
       var block_wrapping_div = el.closest ('div.' + ai_block_class_def);
-//      var block = parseInt ($(this).data ('block'));
-      // ***
       var block = parseInt (el.dataset.block);
 
-//      if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block_wrapping_div.attr ('class'));
-      // ***
       if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
 
       enable_block = false;
@@ -80,8 +64,6 @@ if (typeof ai_filter != 'undefined') {
 
       if (ai_debug) console.log ('AI FILTER HOOK BLOCK', block, enable_block ? 'ENABLED' : 'DISABLED');
 
-//      $(this).css ({"visibility": "", "position": "", "width": "", "height": "", "z-index": ""});
-      // ***
       el.style.visibility = '';
       el.style.position = 'none';
       el.style.width = '';
@@ -102,18 +84,12 @@ if (typeof ai_filter != 'undefined') {
       else comments = ai_filter_hook_comments;
 
       if (typeof ai_front != 'undefined') {
-  //      var debug_bar = $(this).prev ('.ai-debug-bar');
-        // ***
         var debug_bar = prev (el, '.ai-debug-bar');
         if (debug_bar != null) {
-    //      debug_bar.find ('.ai-status').text (enable_block ? ai_front.visible : ai_front.hidden);
-          // ***
           debug_bar.querySelectorAll ('.ai-status').forEach ((element, index) => {
             element.textContent = enable_block ? ai_front.visible : ai_front.hidden;
           });
 
-    //      debug_bar.find ('.ai-filter-data').attr ('title', comments);
-          // ***
           debug_bar.querySelectorAll ('.ai-filter-data').forEach ((element, index) => {
             element.setAttribute ('title', comments);
           });
@@ -121,145 +97,99 @@ if (typeof ai_filter != 'undefined') {
       }
 
       if (!enable_block) {
-//        $(this).hide (); // .ai-filter-check
-        // ***
         el.style.display = 'none'; // .ai-filter-check
 
-//        if (!block_wrapping_div.find ('.ai-debug-block').length) {
-        // ***
         if (block_wrapping_div != null) {
           if (!block_wrapping_div.querySelector ('.ai-debug-block') != null) {
-  //          block_wrapping_div.hide ();
-            // ***
             block_wrapping_div.style.display = 'none'; // .ai-filter-check
           }
 
-  //        block_wrapping_div.removeAttr ('data-ai');
-          // ***
           block_wrapping_div.removeAttribute ('data-ai');
 
-  //        if (block_wrapping_div.find ('.ai-debug-block')) {
-          // ***
           if (block_wrapping_div.querySelector('.ai-debug-block') != null) {
-  //          block_wrapping_div.css ({"visibility": ""}).removeClass ('ai-close');
-            // ***
             block_wrapping_div.style.visibility = '';
             block_wrapping_div.classList.remove ('ai-close');
 
-  //          if (block_wrapping_div.hasClass ('ai-remove-position')) {
-            // ***
             if (block_wrapping_div.classList.contains ('ai-remove-position')) {
-  //            block_wrapping_div.css ({"position": ""});
               block_wrapping_div.style.position = '';
             }
 
             // In case client-side insert is used and lists will not be processed
-  //          if (typeof $(this).data ('code') != 'undefined') {
-            // ***
             if ('code' in el.dataset) {
               // Remove ai-list-block to show debug info
-  //            block_wrapping_div.removeClass ('ai-list-block');
-  //            block_wrapping_div.removeClass ('ai-list-block-ip');
-              // ***
               block_wrapping_div.classList.remove ('ai-list-block');
               block_wrapping_div.classList.remove ('ai-list-block-ip');
 
               // Remove also 'NOT LOADED' bar if it is there
-  //            if (block_wrapping_div.prev ().hasClass ('ai-debug-info')) {
-              // ***
               if (prev (block_wrapping_div) != null && prev (block_wrapping_div).classList.contains ('ai-debug-info')) {
-  //              block_wrapping_div.prev ().remove ();
-                // ***
                 prev (block_wrapping_div).remove ();
               }
             }
 
-  //        } else block_wrapping_div.hide ();
-          // ***
           } else block_wrapping_div.style.display = 'none';;
         }
       } else {
-//          block_wrapping_div.css ({"visibility": ""});
-          // ***
           if (block_wrapping_div != null) {
             block_wrapping_div.style.visibility = '';
 
-  //          if (block_wrapping_div.hasClass ('ai-remove-position')) {
-            // ***
             if (block_wrapping_div.classList.contains ('ai-remove-position')) {
-  //            block_wrapping_div.css ({"position": ""});
-              // ***
               block_wrapping_div.style.position = '';
             }
           }
-//          if (typeof $(this).data ('code') != 'undefined') {
-          // ***
           if ('code' in el.dataset) {
-//            var block_code = b64d ($(this).data ('code'));
-            var block_code = b64d (el.dataset.code);
 
-            var template = document.createElement ('div');
-            template.innerHTML = block_code;
-
-            var range = document.createRange ();
-
-            var fragment_ok = true;
-            try {
-              var fragment = range.createContextualFragment (template.innerHTML);
-            }
-            catch (err) {
-              var fragment_ok = false;
-              if (ai_debug) console.log ('AI INSERT', 'range.createContextualFragment ERROR:', err.message);
+            var insert_code = true;
+            if (typeof ai_code_hashes !== 'undefined') {
+              if (el.hasAttribute ('data-code-hash')) {
+                insert_code = ai_code_hashes.includes (el.dataset.codeHash);
+              } else insert_code = false;
             }
 
-//            if ($(this).closest ('head').length != 0) {
-            // ***
-            if (el.closest ('head') != null) {
-//              $(this).after (block_code);
-              // ***
-              el.insertBefore (fragment, null);
+            if (insert_code) {
+              var block_code = b64d (el.dataset.code);
 
-//              if (!ai_debug) $(this).remove ();
-              // ***
-              if (!ai_debug) el.remove ();
-//            } else $(this).append (block_code);
-            // ***
-            } else el.parentNode.insertBefore (fragment, el.nextSibling);
+              var template = document.createElement ('div');
+              template.innerHTML = block_code;
 
-//                if (!ai_debug)
-//            $(this).attr ('data-code', '');
-            // ***
-            el.setAttribute ('data-code', '');
+              var range = document.createRange ();
 
-//            if (ai_debug) console.log ('AI INSERT CODE', $(block_wrapping_div).attr ('class'));
-            // ***
-            if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
-            if (ai_debug) console.log ('');
+              var fragment_ok = true;
+              try {
+                var fragment = range.createContextualFragment (template.innerHTML);
+              }
+              catch (err) {
+                var fragment_ok = false;
+                if (ai_debug) console.log ('AI INSERT', 'range.createContextualFragment ERROR:', err.message);
+              }
 
-//            ai_process_element (this);
-            // ***
-//            ai_process_element (el);
-            ai_process_element (el.parentElement);
+              if (el.closest ('head') != null) {
+                el.insertBefore (fragment, null);
+
+                if (!ai_debug) el.remove ();
+              } else el.parentNode.insertBefore (fragment, el.nextSibling);
+
+              el.setAttribute ('data-code', '');
+
+              if (ai_debug) console.log ('AI INSERT CODE', block_wrapping_div != null && block_wrapping_div.hasAttribute ('class') ? block_wrapping_div.getAttribute ('class') : '');
+              if (ai_debug) console.log ('');
+
+              ai_process_element (el.parentElement);
+            } else if (ai_debug) console.log ('AI INSERT CODE HASH CHECK FAILED');
           }
         }
 
-//      block_wrapping_div.removeClass ('ai-list-block-filter');
       if (block_wrapping_div != null) {
         block_wrapping_div.classList.remove ('ai-list-block-filter');
       }
     });
   }
 
-//  ai_process_filter_hooks = function (ai_filter_hook_blocks) {
-  // ***
   ai_process_filter_hooks = function (element) {
 
     var ai_debug = typeof ai_debugging !== 'undefined'; // 2
 //    var ai_debug = false;
 
     if (element == null) {
-//      ai_filter_hook_blocks = $("div.ai-filter-check, meta.ai-filter-check");
-      // ***
       ai_filter_hook_blocks = document.querySelectorAll ("div.ai-filter-check, meta.ai-filter-check");
     } else {
         // Temp fix for jQuery elements
@@ -269,8 +199,6 @@ if (typeof ai_filter != 'undefined') {
           ai_filter_hook_blocks = Array.prototype.slice.call (element);
         }
 
-        // ***
-//        ai_filter_hook_blocks = ai_filter_hook_blocks.filter ('.ai-filter-check');
         var filtered_elements = [];
         ai_filter_hook_blocks.forEach ((element, i) => {
           if (element.matches ('.ai-filter-check')) {
@@ -286,6 +214,16 @@ if (typeof ai_filter != 'undefined') {
         });
         ai_filter_hook_blocks = filtered_elements;
       }
+
+    if (typeof ai_code_hashes !== 'undefined') {
+      filtered_elements = [];
+      ai_filter_hook_blocks.forEach ((element, i) => {
+        if (element.hasAttribute ('data-code-hash')) {
+          if (ai_code_hashes.includes (element.dataset.codeHash)) filtered_elements.push (element);
+        }
+      });
+      ai_filter_hook_blocks = filtered_elements;
+    }
 
     if (!ai_filter_hook_blocks.length) return;
 
@@ -311,9 +249,6 @@ if (typeof ai_filter != 'undefined') {
 
     ai_filter_hook_data_requested = true;
 
-//    var page = site_url+"/wp-admin/admin-ajax.php?action=ai_ajax&filter-hook-data=all&ai_check=" + ai_data_id + '&http_user_agent=' + encodeURIComponent (user_agent) + '&http_accept_language=' + encodeURIComponent (language) + ai_random_parameter ();
-//    $.get (page, function (filter_hook_data) {
-    // ***
     var url_data = {
       action: "ai_ajax",
       'filter-hook-data': 'all',
@@ -336,10 +271,6 @@ if (typeof ai_filter != 'undefined') {
         method: 'GET',
       });
 
-//      if (!response.ok) {
-////        throw new Error(`HTTP error! status: ${response.status}`);
-//        if (ai_debug) console.log ("Ajax call failed, Status: " + response.status + ", Error: " + response.statusText);
-//      }
 
       const text = await response.text ();
 
@@ -376,21 +307,14 @@ if (typeof ai_filter != 'undefined') {
       if (ai_debug) console.log ("AI FILTER HOOK RETURNED COMMENTS:", filter_hook_data_test ['comments']);
 
       // Check blocks again - some blocks might get inserted after the filte hook data was requested
-//      ai_filter_hook_blocks = $("div.ai-filter-check, meta.ai-filter-check");
       ai_filter_hook_blocks = document.querySelectorAll ("div.ai-filter-check, meta.ai-filter-check");
 
       if (ai_debug) console.log ("AI FILTER HOOK BLOCKS:", ai_filter_hook_blocks.length);
 
       process_filter_hook_data (ai_filter_hook_blocks);
-//    }).fail (function(jqXHR, status, err) {
-    // ***
     }).catch ((error) => {
-//      if (ai_debug) console.log ("Ajax call failed, Status: " + status + ", Error: " + err);
-      // ***
       if (ai_debug) console.error ("AI FILTER ERROR:", error);
-//      $("div.ai-filter-check").each (function () {
       document.querySelectorAll ('div.ai-filter-check').forEach ((el, index) => {
-//        $(this).css ({"display": "none", "visibility": "", "position": "", "width": "", "height": "", "z-index": ""}).removeClass ('ai-filter-check').hide ();
         el.style.display = 'none';
         el.style.visibility = '';
         el.style.position = '';
@@ -405,10 +329,6 @@ if (typeof ai_filter != 'undefined') {
   }
 
 
-//  $(document).ready (function($) {
-//    setTimeout (function () {ai_process_filter_hooks ()}, 3);
-//  });
-// ***
 function ai_ready (fn) {
   if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
     fn ();
@@ -423,9 +343,6 @@ function ai_check_filter_hooks () {
 
 ai_ready (ai_check_filter_hooks);
 
-//});
-// ***
-
 function ai_process_element (element) {
   setTimeout (function() {
     if (typeof ai_process_rotations_in_element == 'function') {
@@ -433,20 +350,14 @@ function ai_process_element (element) {
     }
 
     if (typeof ai_process_lists == 'function') {
-      // ***
-//      ai_process_lists (jQuery (".ai-list-data", element));
       ai_process_lists ();
     }
 
     if (typeof ai_process_ip_addresses == 'function') {
-      // ***
-//      ai_process_ip_addresses (jQuery (".ai-ip-data", element));
       ai_process_ip_addresses ();
     }
 
     if (typeof ai_process_filter_hooks == 'function') {
-//      ai_process_filter_hooks (jQuery (".ai-filter-check", element));
-      // ***
       ai_process_filter_hooks (element);
     }
 
